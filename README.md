@@ -38,13 +38,13 @@ As rotas são registradas em um objeto `apiRoutes`, onde cada rota define os mé
 
 ```ts
 export const apiRoutes = {
-  "/solicitacao-motivos": {
+  '/solicitacao-motivos': {
     methods: {
       get: { responseSchema: solicitacaoMotivoSchema },
       post: { formSchema: solicitacaoMotivoFormSchema },
     },
   },
-  "/endereco/:id": {
+  '/endereco/:id': {
     methods: {
       get: { responseSchema: enderecoSchema },
     },
@@ -70,8 +70,8 @@ export const httpClient = instance;
 
 ```tsx
 const { data, isLoading, refetch } = useRequest({
-  route: "/solicitacao-motivos",
-  method: "get",
+  route: '/solicitacao-motivos',
+  method: 'get',
   autoFetch: true,
 });
 ```
@@ -80,8 +80,8 @@ const { data, isLoading, refetch } = useRequest({
 
 ```tsx
 const { data } = useRequest({
-  route: "/endereco/:id",
-  method: "get",
+  route: '/endereco/:id',
+  method: 'get',
   autoFetch: true,
   params: { id: 42 },
 });
@@ -91,11 +91,11 @@ const { data } = useRequest({
 
 ```tsx
 const { mutate, isLoading, formSchema } = useRequest({
-  route: "/solicitacao-motivos",
-  method: "post",
+  route: '/solicitacao-motivos',
+  method: 'post',
 });
 
-mutate({ descricao: "Novo motivo" });
+mutate({ descricao: 'Novo motivo' });
 ```
 
 O `formSchema` retornado é o schema Zod da rota/método, podendo ser usado diretamente com bibliotecas como `react-hook-form` + `@hookform/resolvers/zod`.

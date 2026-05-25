@@ -1,5 +1,5 @@
-import { QueryClient } from "@tanstack/react-query";
-import { z } from "zod";
+import { QueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
 
 const handleErrors = (error: Error) => {
   if (error instanceof z.ZodError) {

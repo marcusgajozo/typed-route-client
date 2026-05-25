@@ -1,8 +1,8 @@
-import type { ApiRoutes } from "../api-routes";
-import { getSolicitacaoMotivoSchema } from "./schemas";
+import type { ApiRoutes } from '../api-routes';
+import { getSolicitacaoMotivoSchema } from './schemas';
 
 export const apiRoutesSolicitacaoMotivo = {
-  "/solicitacao-motivos": {
+  '/solicitacao-motivos': {
     methods: {
       get: {
         responseSchema: getSolicitacaoMotivoSchema,
