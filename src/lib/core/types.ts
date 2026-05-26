@@ -16,7 +16,6 @@ export type RouteConfig = {
 
 export type ApiRegistry = Record<string, RouteConfig>;
 
-/** Structural constraint that preserves literal route registries via `const R extends RouteRegistryBase` */
 export type RouteRegistryBase = Record<
   string,
   {
@@ -113,6 +112,24 @@ export type SinglePathParamName<Path extends string> =
 
 export type RouteParamsRecord = Record<string, string | number>;
 
+export type RouteParamName<Path extends string> =
+  ExtractRouteParamNames<Path>[number];
+
+export type RouteParamsFromPath<Path extends string> =
+  ExtractRouteParamNames<Path> extends readonly []
+    ? never
+    : {
+        [K in RouteParamName<Path>]: string | number | undefined;
+      };
+
+export type QueryRouteParamsProp<Path extends string> =
+  HasPathParams<Path> extends true
+    ? { params: RouteParamsFromPath<Path> }
+    : { params?: never };
+
+export type CallRouteParamsProp<Path extends string> =
+  QueryRouteParamsProp<Path>;
+
 export type RouteParamsProp<Path extends string> =
   HasPathParams<Path> extends true
     ? { params: RouteParamsRecord }
@@ -120,13 +137,18 @@ export type RouteParamsProp<Path extends string> =
 
 export type MutationHookParamsProp<Path extends string> =
   HasPathParams<Path> extends true
-    ? { params?: RouteParamsRecord }
+    ? { params?: RouteParamsFromPath<Path> }
     : { params?: never };
 
-export type MutationArgExplicit = {
-  params: RouteParamsRecord;
+export type MutationArgExplicit<Path extends string> = {
+  params: RouteParamsFromPath<Path>;
   body?: unknown;
 };
+
+export type HookProvidesRouteParams<
+  Path extends string,
+  HookOptions extends MutationHookParamsProp<Path>,
+> = HookOptions extends { params: RouteParamsFromPath<Path> } ? true : false;
 
 export type MutationArgMixed<
   R extends RouteRegistryBase,
@@ -144,25 +166,34 @@ export type MutationArg<
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
   HookOptions extends MutationHookParamsProp<Path> & { method: M },
-> = HookOptions extends { params: RouteParamsRecord }
-  ? NonNullable<BodyOf<R, Path, M>> extends never
-    ? undefined
-    : BodyOf<R, Path, M>
-  : HasPathParams<Path> extends true
+> =
+  HookProvidesRouteParams<Path, HookOptions> extends true
     ? NonNullable<BodyOf<R, Path, M>> extends never
-      ? IsSinglePathParam<Path> extends true
-        ? string | number | RouteParamsRecord
-        : RouteParamsRecord
-      : IsSinglePathParam<Path> extends true
-        ? MutationArgMixed<R, Path, M> | MutationArgExplicit
-        : MutationArgExplicit
-    : NonNullable<BodyOf<R, Path, M>> extends never
       ? undefined
-      : BodyOf<R, Path, M>;
+      : BodyOf<R, Path, M>
+    : HasPathParams<Path> extends true
+      ? NonNullable<BodyOf<R, Path, M>> extends never
+        ? IsSinglePathParam<Path> extends true
+          ? string | number | RouteParamsFromPath<Path>
+          : RouteParamsFromPath<Path>
+        : IsSinglePathParam<Path> extends true
+          ? MutationArgMixed<R, Path, M> | MutationArgExplicit<Path>
+          : MutationArgExplicit<Path>
+      : NonNullable<BodyOf<R, Path, M>> extends never
+        ? undefined
+        : BodyOf<R, Path, M>;
 
 export type PathsWithGet<R extends RouteRegistryBase> = {
   [P in keyof R & string]: 'get' extends keyof R[P]['methods'] ? P : never;
 }[keyof R & string];
+
+export type PathsWithGetWithoutParams<R extends RouteRegistryBase> = {
+  [P in PathsWithGet<R>]: HasPathParams<P> extends true ? never : P;
+}[PathsWithGet<R>];
+
+export type PathsWithGetWithParams<R extends RouteRegistryBase> = {
+  [P in PathsWithGet<R>]: HasPathParams<P> extends true ? P : never;
+}[PathsWithGet<R>];
 
 export type PathsWithMethod<
   R extends RouteRegistryBase,

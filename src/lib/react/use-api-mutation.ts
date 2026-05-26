@@ -9,7 +9,6 @@ import {
   type MutationArg,
   type MutationHookParamsProp,
   type ResponseOf,
-  type RouteParamsRecord,
   type RouteRegistryBase,
 } from '../core/types';
 
@@ -50,9 +49,7 @@ type UseApiMutationOptionsInput<
       MutationArg<R, Path, M, UseApiMutationOptionsBase<R, Path, M>>
     >,
     'mutationFn' | 'onError'
-  > & {
-    params?: RouteParamsRecord;
-  };
+  >;
 
 export function createUseApiMutation<const R extends RouteRegistryBase>(
   client: RouteClient<R>,
@@ -87,8 +84,7 @@ export function createUseApiMutation<const R extends RouteRegistryBase>(
           arg,
         );
 
-        return client.callRoute({
-          route,
+        return client.runCallRoute(route, {
           method,
           body,
           queryParams,

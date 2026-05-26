@@ -9,6 +9,8 @@ export type {
   RouteConfig,
 } from '../../lib/core/types';
 
+export { defineApiRoutes } from '../../lib/core/define-api-routes';
+
 export const apiRoutes = {
   ...apiRoutesSolicitacaoMotivo,
   ...apiRoutesSolicitacao,

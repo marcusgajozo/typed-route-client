@@ -1,21 +1,21 @@
 import { isRecord } from './guards';
-import { extractRouteParamNames } from './parse-route';
-import type { MethodConfig, RouteParamsRecord } from './types';
+import { extractRouteParamNames, type RouteParamsInput } from './parse-route';
+import type { MethodConfig } from './types';
 
 export type NormalizedMutationArg = {
-  params?: RouteParamsRecord;
+  params?: RouteParamsInput;
   body?: unknown;
 };
 
 function isExplicitMutationArg(
   value: unknown,
-): value is { params: RouteParamsRecord; body?: unknown } {
+): value is { params: RouteParamsInput; body?: unknown } {
   return isRecord(value) && 'params' in value && isRecord(value.params);
 }
 
 export function normalizeMutationArg(
   route: string,
-  hookParams: RouteParamsRecord | undefined,
+  hookParams: RouteParamsInput | undefined,
   methodConfig: MethodConfig | undefined,
   arg: unknown,
 ): NormalizedMutationArg {
@@ -79,7 +79,7 @@ export function normalizeMutationArg(
     );
   }
 
-  const params: RouteParamsRecord = {};
+  const params: RouteParamsInput = {};
   for (const [key, value] of Object.entries(arg)) {
     if (typeof value === 'string' || typeof value === 'number') {
       params[key] = value;

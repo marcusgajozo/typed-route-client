@@ -1,16 +1,18 @@
 import { useApiMutation, useApiQuery } from './api/client';
 
 export function App() {
-  const { data, isLoading } = useApiQuery('/solicitacao-motivos');
+  const { data, isLoading } = useApiQuery('/solicitacao-motivos/:motivosids', {
+    params: { motivosids: '123' },
+  });
 
   const { mutate: updateUnidade, isPending: isUpdating } = useApiMutation(
     '/solicitacao/alterar-unidade-consumidora/:id',
-    { method: 'patch', params: { id: 2123 } },
+    { method: 'patch', params: { id: 123 } },
   );
 
   const { mutate: deleteCurso, isPending: isDeleting } = useApiMutation(
-    '/solicitacao/alterar-unidade-consumidora/:id',
-    { method: 'patch' },
+    '/cursos/:id',
+    { method: 'delete' },
   );
 
   return (
@@ -34,7 +36,7 @@ export function App() {
         type="button"
         disabled={isDeleting}
         onClick={() => {
-          deleteCurso({ params: {} });
+          deleteCurso({ id: 42 });
         }}
       >
         {isDeleting ? 'Excluindo...' : 'Excluir curso (id: 42)'}

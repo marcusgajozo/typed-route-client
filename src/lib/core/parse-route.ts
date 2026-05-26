@@ -33,3 +33,31 @@ export function extractRouteParamNames(route: string): string[] {
 export function hasRouteParams(route: string): boolean {
   return extractRouteParamNames(route).length > 0;
 }
+
+export type RouteParamsInput = Record<string, string | number | undefined>;
+
+export function areRouteParamsReady(
+  route: string,
+  params: RouteParamsInput | undefined,
+): boolean {
+  const names = extractRouteParamNames(route);
+  if (names.length === 0) {
+    return true;
+  }
+
+  if (params === undefined) {
+    return false;
+  }
+
+  return names.every((name) => params[name] !== undefined);
+}
+
+export function assertRouteParamsReady(
+  route: string,
+  params: RouteParamsInput | undefined,
+): asserts params is Record<string, string | number> {
+  if (!areRouteParamsReady(route, params)) {
+    const names = extractRouteParamNames(route);
+    throw new Error(`Missing route params for "${route}": ${names.join(', ')}`);
+  }
+}

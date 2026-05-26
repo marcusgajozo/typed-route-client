@@ -49,23 +49,24 @@ Não há dependência de axios. O HTTP usa `fetch`; qualquer cliente pode ser pl
 
 ## Contrato de rotas
 
+Defina rotas por domínio com `defineApiRoutes` (valida métodos HTTP e preserva tipos literais):
+
 ```ts
-export const apiRoutes = {
+import { defineApiRoutes } from '../lib/core/define-api-routes';
+
+export const apiRoutesSolicitacaoMotivo = defineApiRoutes({
   '/solicitacao-motivos': {
     methods: {
       get: { responseSchema: getSolicitacaoMotivoSchema },
     },
   },
-  '/solicitacao/alterar-unidade-consumidora/:id': {
-    methods: {
-      patch: { bodySchema: updateUnidadeConsumidoraSchema },
-    },
-  },
-  '/cursos/:id': {
-    methods: {
-      delete: {},
-    },
-  },
+});
+
+// Agregue em services/api/api-routes.ts
+export const apiRoutes = {
+  ...apiRoutesSolicitacaoMotivo,
+  ...apiRoutesSolicitacao,
+  ...apiRoutesCursos,
 } as const;
 ```
 
@@ -111,9 +112,19 @@ useApiQuery('/solicitacao-motivos', {
   queryKey: ['motivos'],
 });
 
-// URL com :param — segundo argumento obrigatório com params
-useApiQuery('/endereco/:id', { params: { id: 42 } });
+// URL com :param — segundo argumento obrigatório; chaves inferidas do path
+const motivosids: string | undefined = '123';
+
+useApiQuery('/solicitacao-motivos/:motivosids', {
+  params: { motivosids },
+});
 ```
+
+Rotas com `:param`:
+
+- exigem `{ params: { ... } }` com chaves inferidas do path (`motivosids`, `id`, etc.);
+- valores podem ser `undefined` no tipo, mas a requisição **só roda** quando todos estiverem definidos (`enabled` automático);
+- `enabled: false` continua desabilitando manualmente.
 
 ### Mutation
 
@@ -174,20 +185,26 @@ itens.forEach((item) => {
 
 ### Sem TanStack (só HTTP)
 
+Mesmo estilo dos hooks: rota no 1º argumento, opções no 2º quando necessário.
+
 ```ts
-const data = await routeClient.callRoute({
-  route: '/solicitacao-motivos',
-  method: 'get',
+// rota sem :param — só o path
+const data = await routeClient.callRoute('/solicitacao-motivos');
+
+// rota com :param — params obrigatório (valores podem ser undefined no tipo)
+const data2 = await routeClient.callRoute('/solicitacao-motivos/:motivosids', {
+  params: { motivosids: '123' },
 });
 ```
+
+O core valida params antes da requisição: se algum valor for `undefined`, `callRoute` lança erro.
 
 ### TanStack manual
 
 ```tsx
 const mutation = useMutation({
   mutationFn: (body) =>
-    routeClient.callRoute({
-      route: '/solicitacao/alterar-unidade-consumidora/:id',
+    routeClient.callRoute('/solicitacao/alterar-unidade-consumidora/:id', {
       method: 'patch',
       params: { id: '123' },
       body,
@@ -226,6 +243,7 @@ export const routeClient = createRouteClient({
 | `useRequest` único                      | `useApiQuery` + `useApiMutation`             |
 | `useApiQuery({ route, method: 'get' })` | `useApiQuery('/rota')`                       |
 | `useApiMutation({ route, method })`     | `useApiMutation('/rota', { method })`        |
+| `callRoute({ route, method, ... })`     | `callRoute('/rota', { method, ... })`        |
 | `formSchema`                            | `bodySchema`                                 |
 | `autoFetch`                             | `enabled` em `useApiQuery`                   |
 | axios                                   | `createFetchTransport` ou transporte próprio |

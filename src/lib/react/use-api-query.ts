@@ -1,13 +1,22 @@
-import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
+import {
+  useQuery,
+  type UseQueryResult,
+  type UseQueryOptions,
+} from '@tanstack/react-query';
 
 import type { RouteClient } from '../core/call-route';
+import {
+  areRouteParamsReady,
+  type RouteParamsInput,
+} from '../core/parse-route';
 import { invokeOnError } from '../core/parse-transport-error';
 import {
   getMethodConfig,
   type PathsWithGet,
+  type PathsWithGetWithoutParams,
+  type PathsWithGetWithParams,
+  type QueryRouteParamsProp,
   type ResponseOf,
-  type RouteParamsProp,
-  type RouteParamsRecord,
   type RouteRegistryBase,
 } from '../core/types';
 
@@ -20,7 +29,7 @@ export type UseApiQueryOptions<
   headers?: Record<string, string>;
   enabled?: boolean;
   onError?: (err: unknown) => void;
-} & RouteParamsProp<Path> &
+} & QueryRouteParamsProp<Path> &
   Omit<
     UseQueryOptions<
       ResponseOf<R, Path, 'get'>,
@@ -30,16 +39,14 @@ export type UseApiQueryOptions<
     'queryKey' | 'queryFn' | 'enabled' | 'select'
   >;
 
-type UseApiQueryOptionsInput<
+export type UseApiQueryOptionsWithoutParams<
   R extends RouteRegistryBase,
-  Path extends PathsWithGet<R>,
-> = Omit<UseApiQueryOptions<R, Path>, 'params'> & {
-  params?: RouteParamsRecord;
-};
+  Path extends PathsWithGetWithoutParams<R>,
+> = Omit<UseApiQueryOptions<R, Path>, 'params'>;
 
 function buildQueryKey(
   route: string,
-  params: RouteParamsRecord | undefined,
+  params: RouteParamsInput | undefined,
   queryParams: Record<string, unknown> | undefined,
   customKey: readonly unknown[] | undefined,
 ): readonly unknown[] {
@@ -56,8 +63,8 @@ function useApiQueryRun<
 >(
   client: RouteClient<R>,
   route: Path,
-  options: UseApiQueryOptionsInput<R, Path> | undefined,
-) {
+  options?: UseApiQueryOptions<R, Path>,
+): UseQueryResult<ResponseOf<R, Path, 'get'>, unknown> {
   const {
     queryKey: customQueryKey,
     queryParams,
@@ -68,24 +75,22 @@ function useApiQueryRun<
     ...queryOptions
   } = options ?? {};
 
-  const callOptions = {
-    route,
-    method: 'get' as const,
-    queryParams,
-    headers,
-    ...(params !== undefined ? { params } : {}),
-  };
-
   const queryKey = buildQueryKey(route, params, queryParams, customQueryKey);
   const methodConfig = getMethodConfig(client.routes, route, 'get');
+  const isParamsReady = areRouteParamsReady(route, params);
 
   return useQuery({
     ...queryOptions,
     queryKey,
-    enabled,
+    enabled: enabled && isParamsReady,
     queryFn: async () => {
       try {
-        return await client.callRoute(callOptions);
+        return await client.runCallRoute(route, {
+          method: 'get',
+          queryParams,
+          headers,
+          params,
+        });
       } catch (err: unknown) {
         invokeOnError(onError, methodConfig, err);
         throw err;
@@ -97,18 +102,19 @@ function useApiQueryRun<
 export function createUseApiQuery<const R extends RouteRegistryBase>(
   client: RouteClient<R>,
 ) {
-  function useApiQuery<Path extends PathsWithGet<R>>(
-    route: Path,
-  ): ReturnType<typeof useApiQueryRun<R, Path>>;
-
-  function useApiQuery<Path extends PathsWithGet<R> & `${string}:${string}`>(
+  function useApiQuery<Path extends PathsWithGetWithParams<R>>(
     route: Path,
     options: UseApiQueryOptions<R, Path>,
-  ): ReturnType<typeof useApiQueryRun<R, Path>>;
+  ): UseQueryResult<ResponseOf<R, Path, 'get'>, unknown>;
+
+  function useApiQuery<Path extends PathsWithGetWithoutParams<R>>(
+    route: Path,
+    options?: UseApiQueryOptionsWithoutParams<R, Path>,
+  ): UseQueryResult<ResponseOf<R, Path, 'get'>, unknown>;
 
   function useApiQuery<Path extends PathsWithGet<R>>(
     route: Path,
-    options?: UseApiQueryOptionsInput<R, Path>,
+    options?: UseApiQueryOptions<R, Path>,
   ) {
     return useApiQueryRun(client, route, options);
   }
