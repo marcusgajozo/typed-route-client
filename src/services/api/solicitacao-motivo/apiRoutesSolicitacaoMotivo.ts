@@ -1,4 +1,3 @@
-import type { ApiRoutes } from '../api-routes';
 import { getSolicitacaoMotivoSchema } from './schemas';
 
 export const apiRoutesSolicitacaoMotivo = {
@@ -9,4 +8,4 @@ export const apiRoutesSolicitacaoMotivo = {
       },
     },
   },
-} as const satisfies Partial<ApiRoutes>;
+} as const;
