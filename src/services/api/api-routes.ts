@@ -1,6 +1,4 @@
-import { apiRoutesCursos } from './cursos/apiRoutesCursos';
-import { apiRoutesSolicitacao } from './solicitacao/apiRoutesSolicitacao';
-import { apiRoutesSolicitacaoMotivo } from './solicitacao-motivo/apiRoutesSolicitacaoMotivo';
+import { apiRoutesUser } from './users/api-routes-user';
 
 export type {
   ApiRegistry,
@@ -12,7 +10,5 @@ export type {
 export { defineApiRoutes } from '../../lib/core/define-api-routes';
 
 export const apiRoutes = {
-  ...apiRoutesSolicitacaoMotivo,
-  ...apiRoutesSolicitacao,
-  ...apiRoutesCursos,
+  ...apiRoutesUser,
 } as const;

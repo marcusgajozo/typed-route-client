@@ -7,10 +7,24 @@ export type NormalizedMutationArg = {
   body?: unknown;
 };
 
+function isRouteParamsInput(value: unknown): value is RouteParamsInput {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return Object.values(value).every(
+    (entry) =>
+      entry === undefined ||
+      typeof entry === 'string' ||
+      typeof entry === 'number',
+  );
+}
+
 function isExplicitMutationArg(
   value: unknown,
 ): value is { params: RouteParamsInput; body?: unknown } {
-  return isRecord(value) && 'params' in value && isRecord(value.params);
+  return (
+    isRecord(value) && 'params' in value && isRouteParamsInput(value.params)
+  );
 }
 
 export function normalizeMutationArg(
@@ -20,10 +34,28 @@ export function normalizeMutationArg(
   arg: unknown,
 ): NormalizedMutationArg {
   if (hookParams) {
-    return {
-      params: hookParams,
-      body: arg,
-    };
+    const hasBodySchema = Boolean(methodConfig?.bodySchema);
+
+    if (hasBodySchema) {
+      if (!isRecord(arg) || !('body' in arg)) {
+        throw new Error(
+          `Route "${route}" requires { body } or { params?, body } when params are set on the hook.`,
+        );
+      }
+      const params =
+        'params' in arg && isRouteParamsInput(arg.params)
+          ? arg.params
+          : hookParams;
+      return { params, body: arg.body };
+    }
+
+    if (isExplicitMutationArg(arg)) {
+      return { params: arg.params, body: arg.body };
+    }
+    if (isRecord(arg) && 'params' in arg && isRouteParamsInput(arg.params)) {
+      return { params: arg.params };
+    }
+    return { params: hookParams };
   }
 
   const paramNames = extractRouteParamNames(route);
@@ -33,20 +65,12 @@ export function normalizeMutationArg(
     return { body: arg };
   }
 
-  if (typeof arg === 'string' || typeof arg === 'number') {
-    if (paramNames.length !== 1) {
+  if (isExplicitMutationArg(arg)) {
+    if (hasBodySchema && !('body' in arg)) {
       throw new Error(
-        `Route "${route}" has multiple params; pass an object with param names.`,
+        `Route "${route}" requires { params, body } when a body schema is defined.`,
       );
     }
-    const paramName = paramNames[0];
-    if (!paramName) {
-      throw new Error(`Route "${route}" has invalid param name.`);
-    }
-    return { params: { [paramName]: arg } };
-  }
-
-  if (isExplicitMutationArg(arg)) {
     return {
       params: arg.params,
       body: arg.body,
@@ -54,38 +78,23 @@ export function normalizeMutationArg(
   }
 
   if (!isRecord(arg)) {
-    throw new Error('Mutation argument must be an object, string, or number.');
-  }
-
-  if (hasBodySchema && paramNames.length === 1) {
-    const paramName = paramNames[0];
-    if (paramName && paramName in arg) {
-      const { [paramName]: paramValue, ...body } = arg;
-      if (typeof paramValue !== 'string' && typeof paramValue !== 'number') {
-        throw new Error(
-          `Route param "${paramName}" must be a string or number.`,
-        );
-      }
-      return {
-        params: { [paramName]: paramValue },
-        body,
-      };
-    }
+    throw new Error('Mutation argument must be an object.');
   }
 
   if (hasBodySchema) {
+    if ('body' in arg && 'params' in arg && isRouteParamsInput(arg.params)) {
+      return { params: arg.params, body: arg.body };
+    }
     throw new Error(
-      `Route "${route}" requires { params, body } when multiple params exist.`,
+      `Route "${route}" requires { params, body } when a body schema is defined.`,
     );
   }
 
-  const params: RouteParamsInput = {};
-  for (const [key, value] of Object.entries(arg)) {
-    if (typeof value === 'string' || typeof value === 'number') {
-      params[key] = value;
-    } else {
-      throw new Error(`Route param "${key}" must be a string or number.`);
-    }
+  if ('params' in arg && isRouteParamsInput(arg.params)) {
+    return { params: arg.params };
   }
-  return { params };
+
+  throw new Error(
+    `Route "${route}" requires { params } when path params are defined.`,
+  );
 }

@@ -1,18 +1,10 @@
 import { useApiMutation, useApiQuery } from './api/client';
 
 export function App() {
-  const { data, isLoading } = useApiQuery('/solicitacao-motivos/:motivosids', {
-    params: { motivosids: '123' },
-  });
-
-  const { mutate: updateUnidade, isPending: isUpdating } = useApiMutation(
-    '/solicitacao/alterar-unidade-consumidora/:id',
-    { method: 'patch', params: { id: 123 } },
-  );
-
-  const { mutate: deleteCurso, isPending: isDeleting } = useApiMutation(
-    '/cursos/:id',
-    { method: 'delete' },
+  const { data, isLoading } = useApiQuery('/users');
+  const { mutate: updateUser, isPending: isUpdating } = useApiMutation(
+    '/users/:userId',
+    { method: 'put' },
   );
 
   return (
@@ -27,19 +19,18 @@ export function App() {
         type="button"
         disabled={isUpdating}
         onClick={() => {
-          updateUnidade({ unidade_consumidora: '10/12345678' });
+          updateUser({
+            body: {
+              id: 1,
+              email: 'teste@teste.com',
+              password: '123456',
+              username: 'teste',
+            },
+            params: { userId: '1' },
+          });
         }}
       >
-        {isUpdating ? 'Salvando...' : 'Alterar unidade consumidora'}
-      </button>
-      <button
-        type="button"
-        disabled={isDeleting}
-        onClick={() => {
-          deleteCurso({ id: 42 });
-        }}
-      >
-        {isDeleting ? 'Excluindo...' : 'Excluir curso (id: 42)'}
+        {isUpdating ? 'Salvando...' : 'Alterar usuário'}
       </button>
     </div>
   );

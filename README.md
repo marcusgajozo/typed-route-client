@@ -131,34 +131,55 @@ Rotas com `:param`:
 O método vai no segundo argumento (obrigatório). `params` no hook fixam o id na URL; caso contrário, o `mutate` recebe params (e body quando houver schema).
 
 ```tsx
-// params fixos no hook → mutate só recebe o body
+// params fixos no hook → mutate com { body }; params opcional para override
 const { mutate: updateUnidade } = useApiMutation(
   '/solicitacao/alterar-unidade-consumidora/:id',
   { method: 'patch', params: { id: '123' } },
 );
-updateUnidade({ unidade_consumidora: '10/12345678' });
+updateUnidade({ body: { unidade_consumidora: '10/12345678' } });
 
-// id dinâmico no mutate (DELETE, PATCH, PUT, etc.)
+// DELETE — { params } obrigatório (ou params opcional se fixos no hook)
 const { mutate: deleteCurso } = useApiMutation('/cursos/:id', {
   method: 'delete',
 });
-deleteCurso('42');
-deleteCurso({ id: '42' });
+deleteCurso({ params: { id: '42' } });
+
+// PUT/PATCH — { params, body } obrigatório quando params não estão no hook
+const { mutate: updateUser } = useApiMutation('/users/:userId', {
+  method: 'put',
+});
+updateUser({
+  params: { userId: 1 },
+  body: { username: 'teste', email: 'teste@teste.com', password: '123456' },
+});
+
+// params fixos no hook — { body } ou { params?, body } para override
+const { mutate: updateUserFixed } = useApiMutation('/users/:userId', {
+  method: 'put',
+  params: { userId: 1 },
+});
+updateUserFixed({
+  body: { username: 'teste', email: 'teste@teste.com', password: '123456' },
+});
+updateUserFixed({
+  params: { userId: 2 },
+  body: { username: 'outro', email: 'outro@teste.com', password: '123456' },
+});
 ```
 
 `bodySchema` no retorno do hook pode ser usado com react-hook-form + `@hookform/resolvers/zod`.
 
 ### Argumentos de `mutate` por cenário
 
-| Rota                   | bodySchema | params no hook        | `mutate(...)`                                                   |
-| ---------------------- | ---------- | --------------------- | --------------------------------------------------------------- |
-| `DELETE /cursos/:id`   | não        | não                   | `mutate(curso.id)` ou `mutate({ id })`                          |
-| `PATCH /cursos/:id`    | sim        | não                   | `mutate({ id, ...body })` ou `mutate({ params: { id }, body })` |
-| `PATCH /foo/:id`       | sim        | `params: { id }` fixo | `mutate(body)` apenas                                           |
-| `POST /items`          | sim        | não                   | `mutate(body)`                                                  |
-| sem `:param`, sem body | não        | não                   | `mutate()`                                                      |
+| Rota                   | bodySchema | params no hook        | `mutate(...)`                                                          |
+| ---------------------- | ---------- | --------------------- | ---------------------------------------------------------------------- |
+| `DELETE /cursos/:id`   | não        | não                   | `mutate({ params: { id } })`                                           |
+| `PATCH /cursos/:id`    | sim        | não                   | `mutate({ params: { id }, body })`                                     |
+| `PATCH /foo/:id`       | sim        | `params: { id }` fixo | `mutate({ body })` ou `mutate({ params: { id }, body })` para override |
+| `POST /items`          | sim        | não                   | `mutate(body)` (rota sem `:param`)                                     |
+| sem `:param`, sem body | não        | não                   | `mutate()`                                                             |
 
-Regra: se `params` estão no hook, o `mutate` só recebe o **body**; se não estão, o `mutate` recebe **params** (e body quando houver `bodySchema`).
+Regra: rotas com `:param` aceitam somente `{ params, body }` ou `{ params? }` (DELETE). Com `params` no hook, `params` no `mutate` é opcional; sem `params` no hook, `params` no `mutate` é obrigatório.
 
 ### Uso em laço (id dinâmico)
 
@@ -170,7 +191,7 @@ const { mutate: deleteCurso } = useApiMutation('/cursos/:id', {
 });
 
 cursos.forEach((curso) => {
-  deleteCurso(curso.id);
+  deleteCurso({ params: { id: curso.id } });
 });
 
 const { mutate: patchCurso } = useApiMutation('/cursos/:id', {
@@ -178,8 +199,10 @@ const { mutate: patchCurso } = useApiMutation('/cursos/:id', {
 });
 
 itens.forEach((item) => {
-  patchCurso({ id: item.id, ativo: true });
-  // equivalente: patchCurso({ params: { id: item.id }, body: { ativo: true } })
+  patchCurso({
+    params: { id: item.id },
+    body: { ativo: true },
+  });
 });
 ```
 

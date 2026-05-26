@@ -27,12 +27,14 @@ export type UseApiMutationOptions<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
-> = UseApiMutationOptionsBase<R, Path, M> &
+  HookOptions extends UseApiMutationOptionsBase<R, Path, M> =
+    UseApiMutationOptionsBase<R, Path, M>,
+> = HookOptions &
   Omit<
     UseMutationOptions<
       ResponseOf<R, Path, M>,
       unknown,
-      MutationArg<R, Path, M, UseApiMutationOptionsBase<R, Path, M>>
+      MutationArg<R, Path, M, HookOptions & { method: M }>
     >,
     'mutationFn' | 'onError'
   >;
@@ -41,15 +43,8 @@ type UseApiMutationOptionsInput<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
-> = UseApiMutationOptionsBase<R, Path, M> &
-  Omit<
-    UseMutationOptions<
-      ResponseOf<R, Path, M>,
-      unknown,
-      MutationArg<R, Path, M, UseApiMutationOptionsBase<R, Path, M>>
-    >,
-    'mutationFn' | 'onError'
-  >;
+  HookOptions extends UseApiMutationOptionsBase<R, Path, M>,
+> = UseApiMutationOptions<R, Path, M, HookOptions>;
 
 export function createUseApiMutation<const R extends RouteRegistryBase>(
   client: RouteClient<R>,
@@ -57,8 +52,8 @@ export function createUseApiMutation<const R extends RouteRegistryBase>(
   return function useApiMutation<
     Path extends keyof R & string,
     M extends keyof R[Path]['methods'] & HttpMethod,
-    const Options extends UseApiMutationOptionsInput<R, Path, M>,
-  >(route: Path, options: Options) {
+    const Options extends UseApiMutationOptionsBase<R, Path, M>,
+  >(route: Path, options: UseApiMutationOptionsInput<R, Path, M, Options>) {
     const {
       method,
       queryParams,
