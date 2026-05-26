@@ -1,4 +1,4 @@
-import type { FetchTransportConfig } from '../lib/core/adapters/fetch-transport';
+import { createFetchTransport } from '../lib/core/adapters/fetch-transport';
 import { isRecord } from '../lib/core/guards';
 
 function getViteEnvString(name: 'VITE_API_BASE_URL'): string {
@@ -19,9 +19,9 @@ function getBaseUrl(): string {
   return getViteEnvString('VITE_API_BASE_URL');
 }
 
-export const fetchConfig = {
+export const fetchConfig = createFetchTransport({
   baseURL: getBaseUrl(),
   defaultHeaders: {
     'Content-Type': 'application/json',
   },
-} satisfies FetchTransportConfig;
+});

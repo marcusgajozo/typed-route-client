@@ -2,10 +2,13 @@ import { useApiMutation, useApiQuery } from './api/client';
 
 export function App() {
   const { data, isLoading } = useApiQuery('/users');
-  const { mutate: updateUser, isPending: isUpdating } = useApiMutation(
-    '/users/:userId',
-    { method: 'put' },
-  );
+  const {
+    mutate: updateUser,
+    isPending: isUpdating,
+    bodySchema,
+  } = useApiMutation('/users/:userId', { method: 'put' });
+
+  console.log(bodySchema);
 
   return (
     <div>
