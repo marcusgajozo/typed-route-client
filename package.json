@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "prepare": "husky",
-    "lint:fix": "eslint --fix; prettier . --write"
+    "lint:fix": "eslint --fix; prettier . --write",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.100.9",
@@ -21,8 +24,12 @@
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
     "@eslint/js": "^10.0.1",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.12.2",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^10.2.1",
@@ -30,9 +37,12 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "husky": "^9.1.7",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
     "lint-staged": "^17.0.5",
     "prettier": "3.8.3",
-    "typescript": "~6.0.2",
+    "ts-jest": "^29.4.11",
+    "typescript": "~6.0.3",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.10"
   }
