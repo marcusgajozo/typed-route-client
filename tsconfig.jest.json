@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
+    "esModuleInterop": true,
     "module": "ESNext",
     "moduleResolution": "node",
     "allowImportingTsExtensions": false,
