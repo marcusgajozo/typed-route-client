@@ -144,10 +144,12 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
     route: Path,
     options?: CallRouteGetOptionsWithoutParams<R, Path>,
   ): Promise<ResponseOf<R, Path, 'get'>>;
+
   async function callRoute<Path extends PathsWithGetWithParams<R>>(
     route: Path,
     options: CallRouteGetOptionsWithParams<R, Path>,
   ): Promise<ResponseOf<R, Path, 'get'>>;
+
   async function callRoute<
     Path extends keyof R & string,
     M extends keyof R[Path]['methods'] & HttpMethod,
@@ -155,6 +157,7 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
     route: Path,
     options: CallRouteParams<R, Path, M>,
   ): Promise<ResponseOf<R, Path, M>>;
+
   async function callRoute(
     route: keyof R & string,
     options?: CallRouteDispatchOptions,
