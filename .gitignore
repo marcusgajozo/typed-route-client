@@ -21,6 +21,7 @@
 !README.md
 !tsconfig.json
 !tsconfig.lib.json
+!tsconfig.build.json
 !tsconfig.jest.json
 !tsup.config.ts
 !tsconfig.tools.json

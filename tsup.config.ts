@@ -2,7 +2,7 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig([
   {
-    tsconfig: 'tsconfig.lib.json',
+    tsconfig: 'tsconfig.build.json',
     entry: { index: 'src/core/index.ts' },
     outDir: 'dist/core',
     format: ['esm'],
@@ -13,7 +13,7 @@ export default defineConfig([
     treeshake: true,
   },
   {
-    tsconfig: 'tsconfig.lib.json',
+    tsconfig: 'tsconfig.build.json',
     entry: { index: 'src/react/index.ts' },
     outDir: 'dist/react',
     format: ['esm'],
