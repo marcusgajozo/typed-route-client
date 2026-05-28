@@ -1,8 +1,8 @@
 import { renderHook, waitFor } from '@testing-library/react';
 
 import { createRouteClient } from '../core/call-route';
-import { createMockTransport, testRoutes } from '../core/test-utils';
-import { createQueryClientWrapper } from './test-utils';
+import { createMockTransport, testRoutes } from '../test/core-utils';
+import { createQueryClientWrapper } from '../test/react-utils';
 import { createUseApiQuery } from './use-api-query';
 
 describe('use-api-query', () => {

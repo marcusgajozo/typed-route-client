@@ -60,11 +60,10 @@ export type BodyOf<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
-> = R[Path]['methods'][M] extends { bodySchema: infer S }
-  ? unknown extends S
-    ? undefined
-    : z.input<S>
-  : undefined;
+> =
+  MethodDef<R, Path, M> extends { bodySchema: infer S extends z.ZodType }
+    ? z.input<S>
+    : undefined;
 
 export type ErrorOf<
   R extends RouteRegistryBase,

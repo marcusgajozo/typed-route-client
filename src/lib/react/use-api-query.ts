@@ -4,7 +4,7 @@ import {
   type UseQueryResult,
 } from '@tanstack/react-query';
 
-import type { RouteClient } from '../core/call-route';
+import { executeCallRoute, type RouteClient } from '../core/call-route';
 import {
   areRouteParamsReady,
   type RouteParamsInput,
@@ -85,12 +85,17 @@ function useApiQueryRun<
     enabled: enabled && isParamsReady,
     queryFn: async () => {
       try {
-        return await client.runCallRoute(route, {
-          method: 'get',
-          queryParams,
-          headers,
-          params,
-        });
+        return await executeCallRoute<R, Path, 'get'>(
+          client.routes,
+          client.transport,
+          route,
+          {
+            method: 'get',
+            queryParams,
+            headers,
+            params,
+          },
+        );
       } catch (err: unknown) {
         invokeOnError(onError, methodConfig, err);
         throw err;

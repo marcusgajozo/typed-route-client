@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
-import { defineApiRoutes } from './define-api-routes';
-import type { HttpTransport, HttpTransportRequest } from './http-transport';
+import { defineApiRoutes } from '../core/define-api-routes';
+import type {
+  HttpTransport,
+  HttpTransportRequest,
+} from '../core/http-transport';
 
 export const testRoutes = defineApiRoutes({
   '/users': {

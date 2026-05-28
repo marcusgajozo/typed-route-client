@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { testRoutes } from '../test/core-utils';
 import {
   parseBody,
   parseBodyFromConfig,
@@ -7,7 +8,6 @@ import {
   parseResponse,
   parseResponseForMethod,
 } from './parse-response';
-import { testRoutes } from './test-utils';
 
 describe('parse-response', () => {
   const userSchema = z.object({ id: z.number(), name: z.string() });

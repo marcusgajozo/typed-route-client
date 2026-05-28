@@ -18,7 +18,7 @@ import {
   type RouteRegistryBase,
 } from './types';
 
-type RunCallRouteOptionsForPath<
+export type RunCallRouteOptionsForPath<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
@@ -31,7 +31,7 @@ type RunCallRouteOptionsForPath<
   : { params?: never }) &
   (BodyOf<R, Path, M> extends undefined
     ? { body?: never }
-    : { body: BodyOf<R, Path, M> });
+    : { body?: BodyOf<R, Path, M> });
 
 export type CallRouteParams<
   R extends RouteRegistryBase,
@@ -99,13 +99,34 @@ export type RouteClient<R extends RouteRegistryBase> = {
     M extends keyof R[Path]['methods'] & HttpMethod,
   >(
     route: Path,
-    options: RunCallRouteOptionsLoose<M>,
+    options: RunCallRouteOptionsForPath<R, Path, M>,
   ): Promise<ResponseOf<R, Path, M>>;
 
   routes: R;
+  transport: HttpTransport;
 };
 
-async function executeCallRoute<
+export async function executeCallRoute<
+  R extends RouteRegistryBase,
+  const Path extends keyof R & string,
+  const M extends keyof R[Path]['methods'] & HttpMethod,
+>(
+  routes: R,
+  transport: HttpTransport,
+  route: Path,
+  options: RunCallRouteOptionsLoose<M>,
+): Promise<ResponseOf<R, Path, M>>;
+export async function executeCallRoute<
+  R extends RouteRegistryBase,
+  Path extends keyof R & string,
+  M extends keyof R[Path]['methods'] & HttpMethod,
+>(
+  routes: R,
+  transport: HttpTransport,
+  route: Path,
+  options: RunCallRouteOptionsLoose<M>,
+): Promise<ResponseOf<R, Path, M>>;
+export async function executeCallRoute<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
@@ -158,7 +179,7 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
     M extends keyof R[Path]['methods'] & HttpMethod,
   >(
     route: Path,
-    options: RunCallRouteOptionsLoose<M>,
+    options: RunCallRouteOptionsForPath<R, Path, M>,
   ): Promise<ResponseOf<R, Path, M>> =>
     executeCallRoute(routes, transport, route, options);
 
@@ -206,5 +227,5 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
     });
   }
 
-  return { callRoute, routes, runCallRoute: runCallRouteBound };
+  return { callRoute, routes, runCallRoute: runCallRouteBound, transport };
 }

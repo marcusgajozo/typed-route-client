@@ -1,6 +1,6 @@
 import { useMutation, type UseMutationOptions } from '@tanstack/react-query';
 
-import type { RouteClient } from '../core/call-route';
+import { executeCallRoute, type RouteClient } from '../core/call-route';
 import { normalizeMutationArg } from '../core/normalize-mutation-arg';
 import { invokeOnError } from '../core/parse-transport-error';
 import {
@@ -67,7 +67,7 @@ export function createUseApiMutation<const R extends RouteRegistryBase>(
     const methodConfig = getMethodConfig(client.routes, route, method);
     const bodySchema = methodConfig?.bodySchema;
 
-    type Variables = MutationArg<R, Path, M, Options>;
+    type Variables = MutationArg<R, Path, Options['method'], Options>;
 
     const mutation = useMutation({
       ...mutationOptions,
@@ -79,13 +79,18 @@ export function createUseApiMutation<const R extends RouteRegistryBase>(
           arg,
         );
 
-        return client.runCallRoute(route, {
-          method,
-          body,
-          queryParams,
-          headers,
-          ...(params !== undefined ? { params } : {}),
-        });
+        return executeCallRoute<R, Path, M>(
+          client.routes,
+          client.transport,
+          route,
+          {
+            method,
+            body,
+            queryParams,
+            headers,
+            ...(params !== undefined ? { params } : {}),
+          },
+        );
       },
       onError: (err: unknown) => {
         invokeOnError(onError, methodConfig, err);
