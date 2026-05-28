@@ -5,19 +5,19 @@ import {
   type UseMutationOptions,
   type UseMutationResult,
 } from '@tanstack/react-query';
-
-import { executeCallRoute, type RouteClient } from '../core/call-route';
-import { normalizeMutationArg } from '../core/normalize-mutation-arg';
-import { invokeOnError } from '../core/parse-transport-error';
 import {
+  executeCallRoute,
   getMethodConfig,
   type HttpMethod,
+  invokeOnError,
   type MutationArg,
   type MutationHookParamsProp,
+  normalizeMutationArg,
   type ResponseOf,
+  type RouteClient,
   type RouteRegistryBase,
   type ZodSchema,
-} from '../core/types';
+} from 'typed-route-client/core';
 
 export type UseApiMutationOptionsBase<
   R extends RouteRegistryBase,

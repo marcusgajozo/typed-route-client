@@ -3,22 +3,20 @@ import {
   type UseQueryOptions,
   type UseQueryResult,
 } from '@tanstack/react-query';
-
-import { executeCallRoute, type RouteClient } from '../core/call-route';
 import {
   areRouteParamsReady,
-  type RouteParamsInput,
-} from '../core/parse-route';
-import { invokeOnError } from '../core/parse-transport-error';
-import {
+  executeCallRoute,
   getMethodConfig,
+  invokeOnError,
   type PathsWithGet,
   type PathsWithGetWithoutParams,
   type PathsWithGetWithParams,
   type QueryRouteParamsProp,
   type ResponseOf,
+  type RouteClient,
+  type RouteParamsInput,
   type RouteRegistryBase,
-} from '../core/types';
+} from 'typed-route-client/core';
 
 export type UseApiQueryOptions<
   R extends RouteRegistryBase,

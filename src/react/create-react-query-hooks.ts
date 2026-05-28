@@ -1,5 +1,5 @@
-import type { RouteClient } from '../core/call-route';
-import type { RouteRegistryBase } from '../core/types';
+import type { RouteClient, RouteRegistryBase } from 'typed-route-client/core';
+
 import {
   createUseApiMutation,
   type UseApiMutationHook,

@@ -1,40 +1,61 @@
 {
-  "name": "react-hook-use-request",
-  "private": true,
-  "version": "0.0.0",
+  "name": "typed-route-client",
+  "version": "0.1.0",
+  "description": "Typed REST routes with Zod and optional TanStack Query hooks for React",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marcusgajozo/typed-route-client.git"
+  },
   "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    }
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsup",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "prepare": "husky",
     "lint:fix": "eslint --fix; prettier . --write",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "prepublishOnly": "pnpm build"
   },
-  "dependencies": {
-    "@tanstack/react-query": "^5.100.9",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
-    "zod": "^4.4.3"
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "react": ">=18",
+    "zod": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-query": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
     "@eslint/js": "^10.0.1",
+    "@tanstack/react-query": "^5.100.9",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.15",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^10.2.1",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
     "eslint-plugin-simple-import-sort": "^13.0.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^17.5.0",
@@ -43,9 +64,11 @@
     "jest-environment-jsdom": "^30.4.1",
     "lint-staged": "^17.0.5",
     "prettier": "3.8.3",
+    "react": "^19.2.5",
     "ts-jest": "^29.4.11",
+    "tsup": "^8.5.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.10"
+    "zod": "^4.4.3"
   }
 }

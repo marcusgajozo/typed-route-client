@@ -1,13 +1,15 @@
 {
-  "extends": "./tsconfig.app.json",
+  "extends": "./tsconfig.lib.json",
   "compilerOptions": {
     "esModuleInterop": true,
     "module": "ESNext",
     "moduleResolution": "node",
-    "allowImportingTsExtensions": false,
     "verbatimModuleSyntax": false,
     "noEmit": true,
-    "types": ["jest", "@testing-library/jest-dom"]
+    "types": ["jest", "@testing-library/jest-dom"],
+    "paths": {
+      "typed-route-client/core": ["./src/core/index.ts"]
+    }
   },
-  "include": ["src/lib", "jest.setup.ts"]
+  "include": ["src/core", "src/react", "src/test", "jest.setup.ts"]
 }

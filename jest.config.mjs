@@ -1,10 +1,11 @@
 /** @type {import('jest').Config} */
 const config = {
   coverageProvider: 'v8',
-  roots: ['<rootDir>/src/lib'],
+  roots: ['<rootDir>/src/core', '<rootDir>/src/react'],
   testMatch: ['**/__tests__/**/*.{ts,tsx}', '**/*.{test,spec}.{ts,tsx}'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
+    '^typed-route-client/core$': '<rootDir>/src/core/index.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
@@ -32,10 +33,7 @@ const config = {
       setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
       displayName: 'unit',
       testEnvironment: 'node',
-      testMatch: [
-        '<rootDir>/src/lib/core/**/*.{test,spec}.ts',
-        '<rootDir>/src/api/**/*.{test,spec}.ts',
-      ],
+      testMatch: ['<rootDir>/src/core/**/*.{test,spec}.ts'],
     },
     {
       transform: {
@@ -45,13 +43,14 @@ const config = {
         ],
       },
       extensionsToTreatAsEsm: ['.ts', '.tsx'],
-      moduleNameMapper: {
-        '^(\\.{1,2}/.*)\\.js$': '$1',
-      },
       setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
       displayName: 'react',
       testEnvironment: 'jsdom',
-      testMatch: ['<rootDir>/src/lib/react/**/*.{test,spec}.{ts,tsx}'],
+      testMatch: ['<rootDir>/src/react/**/*.{test,spec}.{ts,tsx}'],
+      moduleNameMapper: {
+        '^typed-route-client/core$': '<rootDir>/src/core/index.ts',
+        '^(\\.{1,2}/.*)\\.js$': '$1',
+      },
     },
   ],
 };

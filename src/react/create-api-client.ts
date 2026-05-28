@@ -1,11 +1,15 @@
-import { createRouteClient, type RouteClient } from './core/call-route';
-import type { HttpTransport } from './core/http-transport';
-import type { RouteRegistryBase } from './core/types';
+import {
+  createRouteClient,
+  type HttpTransport,
+  type RouteClient,
+  type RouteRegistryBase,
+} from 'typed-route-client/core';
+
 import {
   createUseApiMutation,
   type UseApiMutationHook,
-} from './react/use-api-mutation';
-import { createUseApiQuery, type UseApiQueryHook } from './react/use-api-query';
+} from './use-api-mutation';
+import { createUseApiQuery, type UseApiQueryHook } from './use-api-query';
 
 export type ApiClient<R extends RouteRegistryBase> = {
   routeClient: RouteClient<R>;

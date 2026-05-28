@@ -4,6 +4,8 @@
 !.husky/**/*
 !src
 !src/**/*
+!dist
+!dist/**/*
 !.gitignore
 !.lintstagedrc
 !.nvmrc
@@ -18,7 +20,7 @@
 !pnpm-workspace.yaml
 !README.md
 !tsconfig.json
-!tsconfig.app.json
+!tsconfig.lib.json
 !tsconfig.jest.json
-!tsconfig.node.json
-!.vite.config.ts
+!tsup.config.ts
+!tsconfig.tools.json
