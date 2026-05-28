@@ -49,6 +49,25 @@ describe('define-api-routes', () => {
     expect(merged['/e'].methods.get.responseSchema).toBeDefined();
   });
 
+  it('mergeApiRoutes preserves route path literals in the merged type', () => {
+    const merged = mergeApiRoutes(routesA, routesB);
+
+    type MergedKeys = keyof typeof merged;
+
+    function typeCheck() {
+      const routeA: MergedKeys = '/a';
+      const routeB: MergedKeys = '/b';
+
+      // @ts-expect-error /z is not a registered route
+      const _unknownRoute: MergedKeys = '/z';
+
+      return { routeA, routeB };
+    }
+
+    expect(typeCheck).toBeDefined();
+    expect(Object.keys(merged)).toEqual(expect.arrayContaining(['/a', '/b']));
+  });
+
   it('later groups override duplicate route keys', () => {
     const first = defineApiRoutes({
       '/users': {

@@ -12,7 +12,7 @@ type MergeRouteGroups<T extends readonly Record<string, RouteConfig>[]> =
     ...infer Rest extends readonly Record<string, RouteConfig>[],
   ]
     ? First & MergeRouteGroups<Rest>
-    : Record<string, RouteConfig>;
+    : Record<string, never>;
 
 export function mergeApiRoutes<
   const T extends readonly [
