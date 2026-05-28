@@ -14,12 +14,6 @@ A lib **não** inclui adapter HTTP (fetch, axios, etc.). Você implementa `HttpT
 pnpm add github:marcusgajozo/typed-route-client#v0.1.0
 ```
 
-Se o repositório ainda se chamar `react-hook-use-request`:
-
-```bash
-pnpm add github:marcusgajozo/react-hook-use-request#v0.1.0
-```
-
 ### npm (em breve)
 
 ```bash
