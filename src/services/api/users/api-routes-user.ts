@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { defineApiRoutes } from '../api-routes';
+import { defineApiRoutes } from '../../../lib/core/define-api-routes';
 
 export const apiRoutesUser = defineApiRoutes({
   '/users': {
