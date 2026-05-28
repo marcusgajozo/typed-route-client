@@ -48,9 +48,9 @@ describe('call-route inference', () => {
     }
 
     function typeCheckMissingParam() {
+      // @ts-expect-error userId is required in params
       return client.callRoute('/users/:userId', {
         method: 'put',
-        // @ts-expect-error userId is required in params
         params: {},
         body: { name: 'Ana' },
       });

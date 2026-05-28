@@ -1,11 +1,19 @@
 import type { RouteClient } from '../core/call-route';
 import type { RouteRegistryBase } from '../core/types';
-import { createUseApiMutation } from './use-api-mutation';
-import { createUseApiQuery } from './use-api-query';
+import {
+  createUseApiMutation,
+  type UseApiMutationHook,
+} from './use-api-mutation';
+import { createUseApiQuery, type UseApiQueryHook } from './use-api-query';
+
+export type ReactQueryHooks<R extends RouteRegistryBase> = {
+  useApiQuery: UseApiQueryHook<R>;
+  useApiMutation: UseApiMutationHook<R>;
+};
 
 export function createReactQueryHooks<const R extends RouteRegistryBase>(
   client: RouteClient<R>,
-) {
+): ReactQueryHooks<R> {
   return {
     useApiQuery: createUseApiQuery(client),
     useApiMutation: createUseApiMutation(client),

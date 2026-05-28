@@ -104,9 +104,21 @@ function useApiQueryRun<
   });
 }
 
+export type UseApiQueryHook<R extends RouteRegistryBase> = {
+  <Path extends PathsWithGetWithParams<R>>(
+    route: Path,
+    options: UseApiQueryOptions<R, Path>,
+  ): UseQueryResult<ResponseOf<R, Path, 'get'>, unknown>;
+
+  <Path extends PathsWithGetWithoutParams<R>>(
+    route: Path,
+    options?: UseApiQueryOptionsWithoutParams<R, Path>,
+  ): UseQueryResult<ResponseOf<R, Path, 'get'>, unknown>;
+};
+
 export function createUseApiQuery<const R extends RouteRegistryBase>(
   client: RouteClient<R>,
-) {
+): UseApiQueryHook<R> {
   function useApiQuery<Path extends PathsWithGetWithParams<R>>(
     route: Path,
     options: UseApiQueryOptions<R, Path>,

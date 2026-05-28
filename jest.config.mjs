@@ -32,7 +32,10 @@ const config = {
       setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
       displayName: 'unit',
       testEnvironment: 'node',
-      testMatch: ['<rootDir>/src/lib/core/**/*.{test,spec}.ts'],
+      testMatch: [
+        '<rootDir>/src/lib/core/**/*.{test,spec}.ts',
+        '<rootDir>/src/api/**/*.{test,spec}.ts',
+      ],
     },
     {
       transform: {

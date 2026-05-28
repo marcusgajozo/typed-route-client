@@ -1,4 +1,10 @@
-import { useMutation, type UseMutationOptions } from '@tanstack/react-query';
+import {
+  type UseMutateAsyncFunction,
+  type UseMutateFunction,
+  useMutation,
+  type UseMutationOptions,
+  type UseMutationResult,
+} from '@tanstack/react-query';
 
 import { executeCallRoute, type RouteClient } from '../core/call-route';
 import { normalizeMutationArg } from '../core/normalize-mutation-arg';
@@ -10,6 +16,7 @@ import {
   type MutationHookParamsProp,
   type ResponseOf,
   type RouteRegistryBase,
+  type ZodSchema,
 } from '../core/types';
 
 export type UseApiMutationOptionsBase<
@@ -34,7 +41,7 @@ export type UseApiMutationOptions<
     UseMutationOptions<
       ResponseOf<R, Path, M>,
       unknown,
-      MutationArg<R, Path, M, HookOptions & { method: M }>
+      MutationArg<R, Path, M, HookOptions>
     >,
     'mutationFn' | 'onError'
   >;
@@ -46,14 +53,27 @@ type UseApiMutationOptionsInput<
   HookOptions extends UseApiMutationOptionsBase<R, Path, M>,
 > = UseApiMutationOptions<R, Path, M, HookOptions>;
 
+export type UseApiMutationHook<R extends RouteRegistryBase> = <
+  Path extends keyof R & string,
+  const M extends keyof R[Path]['methods'] & HttpMethod,
+  HookOptions extends UseApiMutationOptionsBase<R, Path, M>,
+>(
+  route: Path,
+  options: UseApiMutationOptionsInput<R, Path, M, HookOptions>,
+) => UseMutationResult<
+  ResponseOf<R, Path, M>,
+  unknown,
+  MutationArg<R, Path, M, HookOptions>
+> & { bodySchema: ZodSchema | undefined };
+
 export function createUseApiMutation<const R extends RouteRegistryBase>(
   client: RouteClient<R>,
-) {
-  return function useApiMutation<
+): UseApiMutationHook<R> {
+  function useApiMutation<
     Path extends keyof R & string,
-    M extends keyof R[Path]['methods'] & HttpMethod,
-    const Options extends UseApiMutationOptionsBase<R, Path, M>,
-  >(route: Path, options: UseApiMutationOptionsInput<R, Path, M, Options>) {
+    const M extends keyof R[Path]['methods'] & HttpMethod,
+    HookOptions extends UseApiMutationOptionsBase<R, Path, M>,
+  >(route: Path, options: UseApiMutationOptionsInput<R, Path, M, HookOptions>) {
     const {
       method,
       queryParams,
@@ -67,11 +87,12 @@ export function createUseApiMutation<const R extends RouteRegistryBase>(
     const methodConfig = getMethodConfig(client.routes, route, method);
     const bodySchema = methodConfig?.bodySchema;
 
-    type Variables = MutationArg<R, Path, Options['method'], Options>;
+    type TData = ResponseOf<R, Path, M>;
+    type TVariables = MutationArg<R, Path, M, HookOptions>;
 
-    const mutation = useMutation({
+    const mutation = useMutation<TData, unknown, TVariables>({
       ...mutationOptions,
-      mutationFn: (arg: Variables) => {
+      mutationFn: (arg: TVariables) => {
         const { params, body } = normalizeMutationArg(
           route,
           hookParams,
@@ -98,9 +119,18 @@ export function createUseApiMutation<const R extends RouteRegistryBase>(
       onSuccess,
     });
 
+    const mutate: UseMutateFunction<TData, unknown, TVariables> =
+      mutation.mutate;
+    const mutateAsync: UseMutateAsyncFunction<TData, unknown, TVariables> =
+      mutation.mutateAsync;
+
     return {
       ...mutation,
+      mutate,
+      mutateAsync,
       bodySchema,
     };
-  };
+  }
+
+  return useApiMutation;
 }

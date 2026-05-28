@@ -60,10 +60,11 @@ export type BodyOf<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
-> =
-  MethodDef<R, Path, M> extends { bodySchema: infer S extends z.ZodType }
+> = M extends keyof R[Path]['methods'] & HttpMethod
+  ? MethodDef<R, Path, M> extends { bodySchema: infer S extends z.ZodType }
     ? z.input<S>
-    : undefined;
+    : undefined
+  : never;
 
 export type ErrorOf<
   R extends RouteRegistryBase,
@@ -144,12 +145,20 @@ export type MutationArgParamsAndBody<
   PathKey extends keyof R & string,
   M extends keyof R[PathKey]['methods'] & HttpMethod,
   ParamsRequired extends boolean,
-> = (ParamsRequired extends true
-  ? { params: RouteParamsFromPath<Path> }
-  : { params?: RouteParamsFromPath<Path> }) &
-  (BodyOf<R, PathKey, M> extends undefined
-    ? Record<string, never>
-    : { body: BodyOf<R, PathKey, M> });
+> =
+  BodyOf<R, PathKey, M> extends undefined
+    ? ParamsRequired extends true
+      ? { params: RouteParamsFromPath<Path> }
+      : { params?: RouteParamsFromPath<Path> }
+    : ParamsRequired extends true
+      ? {
+          params: RouteParamsFromPath<Path>;
+          body: BodyOf<R, PathKey, M>;
+        }
+      : {
+          params?: RouteParamsFromPath<Path>;
+          body: BodyOf<R, PathKey, M>;
+        };
 
 export type MutationArgExplicit<
   R extends RouteRegistryBase,

@@ -1,12 +1,18 @@
-import { createRouteClient } from '../lib/core/call-route';
-import { createReactQueryHooks } from '../lib/react/create-react-query-hooks';
+import { createApiClient } from '../lib/create-api-client';
+import type { UseApiMutationHook } from '../lib/react/use-api-mutation';
+import type { UseApiQueryHook } from '../lib/react/use-api-query';
 import { appHttpTransport } from '../libs/http-transport';
 import { apiRoutes } from '../services/api/api-routes';
 
-export const routeClient = createRouteClient({
+const apiClient = createApiClient({
   routes: apiRoutes,
   transport: appHttpTransport,
 });
 
-export const { useApiQuery, useApiMutation } =
-  createReactQueryHooks(routeClient);
+export const routeClient = apiClient.routeClient;
+
+type AppRoutes = typeof apiRoutes;
+
+export const useApiQuery: UseApiQueryHook<AppRoutes> = apiClient.useApiQuery;
+export const useApiMutation: UseApiMutationHook<AppRoutes> =
+  apiClient.useApiMutation;
