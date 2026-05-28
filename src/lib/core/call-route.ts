@@ -1,34 +1,43 @@
 import type { HttpTransport } from './http-transport';
+import { parseBodyFromConfig, parseResponseForMethod } from './parse-response';
 import {
   assertRouteParamsReady,
   parseRoute,
   type RouteParamsInput,
 } from './parse-route';
-import { parseBodyFromConfig, parseResponseForMethod } from './parse-response';
-import { getMethodConfig } from './types';
-import type {
-  HasPathParams,
-  HttpMethod,
-  PathsWithGetWithoutParams,
-  PathsWithGetWithParams,
-  QueryRouteParamsProp,
-  ResponseOf,
-  RouteParamsFromPath,
-  RouteRegistryBase,
+import {
+  type BodyOf,
+  getMethodConfig,
+  type HasPathParams,
+  type HttpMethod,
+  type PathsWithGetWithoutParams,
+  type PathsWithGetWithParams,
+  type QueryRouteParamsProp,
+  type ResponseOf,
+  type RouteParamName,
+  type RouteRegistryBase,
 } from './types';
 
-export type CallRouteParams<
+type RunCallRouteOptionsForPath<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
 > = {
   method: M;
-  body?: unknown;
   queryParams?: Record<string, unknown>;
   headers?: Record<string, string>;
 } & (HasPathParams<Path> extends true
-  ? { params: RouteParamsFromPath<Path> }
-  : { params?: never });
+  ? { params: { [K in RouteParamName<Path>]: string | number } }
+  : { params?: never }) &
+  (BodyOf<R, Path, M> extends undefined
+    ? { body?: never }
+    : { body: BodyOf<R, Path, M> });
+
+export type CallRouteParams<
+  R extends RouteRegistryBase,
+  Path extends keyof R & string,
+  M extends keyof R[Path]['methods'] & HttpMethod,
+> = RunCallRouteOptionsForPath<R, Path, M>;
 
 export type CallRouteGetOptionsWithoutParams<
   R extends RouteRegistryBase,
@@ -44,7 +53,7 @@ export type CallRouteGetOptionsWithParams<
   method?: 'get';
 } & QueryRouteParamsProp<Path>;
 
-export type RunCallRouteOptions<M extends HttpMethod = HttpMethod> = {
+export type RunCallRouteOptionsLoose<M extends HttpMethod = HttpMethod> = {
   method: M;
   body?: unknown;
   queryParams?: Record<string, unknown>;
@@ -90,13 +99,13 @@ export type RouteClient<R extends RouteRegistryBase> = {
     M extends keyof R[Path]['methods'] & HttpMethod,
   >(
     route: Path,
-    options: RunCallRouteOptions<M>,
+    options: RunCallRouteOptionsLoose<M>,
   ): Promise<ResponseOf<R, Path, M>>;
 
   routes: R;
 };
 
-export async function runCallRoute<
+async function executeCallRoute<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
@@ -104,7 +113,7 @@ export async function runCallRoute<
   routes: R,
   transport: HttpTransport,
   route: Path,
-  options: RunCallRouteOptions<M>,
+  options: RunCallRouteOptionsLoose<M>,
 ): Promise<ResponseOf<R, Path, M>> {
   const { method, body, queryParams, headers, params } = options;
 
@@ -125,6 +134,19 @@ export async function runCallRoute<
   return parseResponseForMethod(routes, route, method, response.data);
 }
 
+export async function runCallRoute<
+  R extends RouteRegistryBase,
+  Path extends keyof R & string,
+  M extends keyof R[Path]['methods'] & HttpMethod,
+>(
+  routes: R,
+  transport: HttpTransport,
+  route: Path,
+  options: RunCallRouteOptionsForPath<R, Path, M>,
+): Promise<ResponseOf<R, Path, M>> {
+  return executeCallRoute(routes, transport, route, options);
+}
+
 export function createRouteClient<const R extends RouteRegistryBase>(config: {
   routes: R;
   transport: HttpTransport;
@@ -136,9 +158,9 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
     M extends keyof R[Path]['methods'] & HttpMethod,
   >(
     route: Path,
-    options: RunCallRouteOptions<M>,
+    options: RunCallRouteOptionsLoose<M>,
   ): Promise<ResponseOf<R, Path, M>> =>
-    runCallRoute(routes, transport, route, options);
+    executeCallRoute(routes, transport, route, options);
 
   async function callRoute<Path extends PathsWithGetWithoutParams<R>>(
     route: Path,
@@ -163,11 +185,11 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
     options?: CallRouteDispatchOptions,
   ) {
     if (options === undefined) {
-      return runCallRoute(routes, transport, route, { method: 'get' });
+      return executeCallRoute(routes, transport, route, { method: 'get' });
     }
 
     if (isMutationMethod(options.method)) {
-      return runCallRoute(routes, transport, route, {
+      return executeCallRoute(routes, transport, route, {
         method: options.method,
         body: options.body,
         queryParams: options.queryParams,
@@ -176,7 +198,7 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
       });
     }
 
-    return runCallRoute(routes, transport, route, {
+    return executeCallRoute(routes, transport, route, {
       method: 'get',
       queryParams: options.queryParams,
       headers: options.headers,

@@ -1,7 +1,7 @@
 import {
   useQuery,
-  type UseQueryResult,
   type UseQueryOptions,
+  type UseQueryResult,
 } from '@tanstack/react-query';
 
 import type { RouteClient } from '../core/call-route';

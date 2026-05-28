@@ -1,4 +1,5 @@
 import z from 'zod';
+
 import { defineApiRoutes } from '../api-routes';
 
 export const apiRoutesUser = defineApiRoutes({

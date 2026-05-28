@@ -1,5 +1,5 @@
-import type { HttpTransportError } from './http-transport';
 import { hasErrorData, isHttpTransportError } from './guards';
+import type { HttpTransportError } from './http-transport';
 import { parseErrorResponse } from './parse-response';
 import type { MethodConfig } from './types';
 

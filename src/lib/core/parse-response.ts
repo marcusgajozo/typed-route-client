@@ -1,8 +1,12 @@
 import { z } from 'zod';
 
 import { isRecord } from './guards';
-import type { MethodConfig } from './types';
-import type { HttpMethod, ResponseOf, RouteRegistryBase } from './types';
+import type {
+  HttpMethod,
+  MethodConfig,
+  ResponseOf,
+  RouteRegistryBase,
+} from './types';
 
 export function parseResponse<Output>(
   schema: z.ZodType<Output>,
