@@ -10,6 +10,7 @@ import {
   getMethodConfig,
   type HasPathParams,
   type HttpMethod,
+  type PathsWithGet,
   type PathsWithGetWithoutParams,
   type PathsWithGetWithParams,
   type QueryRouteParamsProp,
@@ -31,7 +32,7 @@ export type RunCallRouteOptionsForPath<
   : { params?: never }) &
   (BodyOf<R, Path, M> extends undefined
     ? { body?: never }
-    : { body?: BodyOf<R, Path, M> });
+    : { body: BodyOf<R, Path, M> });
 
 export type CallRouteParams<
   R extends RouteRegistryBase,
@@ -52,6 +53,15 @@ export type CallRouteGetOptionsWithParams<
 > = Omit<CallRouteParams<R, Path, 'get'>, 'method' | 'params'> & {
   method?: 'get';
 } & QueryRouteParamsProp<Path>;
+
+export type CallRouteGetOptionsForPath<
+  R extends RouteRegistryBase,
+  Path extends PathsWithGet<R>,
+> = Omit<CallRouteParams<R, Path, 'get'>, 'method' | 'params'> & {
+  method?: 'get';
+} & (HasPathParams<Path> extends true
+    ? QueryRouteParamsProp<Path>
+    : { params?: never });
 
 export type RunCallRouteOptionsLoose<M extends HttpMethod = HttpMethod> = {
   method: M;
@@ -76,23 +86,20 @@ function isMutationMethod(
 }
 
 export type RouteClient<R extends RouteRegistryBase> = {
-  callRoute<Path extends PathsWithGetWithoutParams<R>>(
-    route: Path,
-    options?: CallRouteGetOptionsWithoutParams<R, Path>,
-  ): Promise<ResponseOf<R, Path, 'get'>>;
-
-  callRoute<Path extends PathsWithGetWithParams<R>>(
-    route: Path,
-    options: CallRouteGetOptionsWithParams<R, Path>,
-  ): Promise<ResponseOf<R, Path, 'get'>>;
-
   callRoute<
     Path extends keyof R & string,
-    M extends keyof R[Path]['methods'] & HttpMethod,
+    const M extends keyof R[Path]['methods'] & HttpMethod,
   >(
     route: Path,
     options: CallRouteParams<R, Path, M>,
   ): Promise<ResponseOf<R, Path, M>>;
+
+  callRoute<Path extends PathsWithGet<R>>(
+    route: Path,
+    ...args: HasPathParams<Path> extends true
+      ? [options: CallRouteGetOptionsForPath<R, Path>]
+      : [options?: CallRouteGetOptionsForPath<R, Path>]
+  ): Promise<ResponseOf<R, Path, 'get'>>;
 
   runCallRoute<
     Path extends keyof R & string,
@@ -183,23 +190,20 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
   ): Promise<ResponseOf<R, Path, M>> =>
     executeCallRoute(routes, transport, route, options);
 
-  async function callRoute<Path extends PathsWithGetWithoutParams<R>>(
-    route: Path,
-    options?: CallRouteGetOptionsWithoutParams<R, Path>,
-  ): Promise<ResponseOf<R, Path, 'get'>>;
-
-  async function callRoute<Path extends PathsWithGetWithParams<R>>(
-    route: Path,
-    options: CallRouteGetOptionsWithParams<R, Path>,
-  ): Promise<ResponseOf<R, Path, 'get'>>;
-
   async function callRoute<
     Path extends keyof R & string,
-    M extends keyof R[Path]['methods'] & HttpMethod,
+    const M extends keyof R[Path]['methods'] & HttpMethod,
   >(
     route: Path,
     options: CallRouteParams<R, Path, M>,
   ): Promise<ResponseOf<R, Path, M>>;
+
+  async function callRoute<Path extends PathsWithGet<R>>(
+    route: Path,
+    ...args: HasPathParams<Path> extends true
+      ? [options: CallRouteGetOptionsForPath<R, Path>]
+      : [options?: CallRouteGetOptionsForPath<R, Path>]
+  ): Promise<ResponseOf<R, Path, 'get'>>;
 
   async function callRoute(
     route: keyof R & string,
@@ -227,5 +231,12 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
     });
   }
 
-  return { callRoute, routes, runCallRoute: runCallRouteBound, transport };
+  const client = {
+    callRoute,
+    routes,
+    runCallRoute: runCallRouteBound,
+    transport,
+  } satisfies RouteClient<R>;
+
+  return client;
 }

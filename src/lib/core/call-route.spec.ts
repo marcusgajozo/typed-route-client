@@ -77,13 +77,15 @@ describe('call-route', () => {
       expect(typeCheck).toBeDefined();
     });
 
-    it('runCallRoute allows omitting body when bodySchema exists', () => {
+    it('runCallRoute requires body when bodySchema exists', () => {
       function typeCheck() {
         const transport = createMockTransport(jest.fn());
 
         return runCallRoute(testRoutes, transport, '/users/:userId', {
           method: 'put',
           params: { userId: 1 },
+          // @ts-expect-error body is required when the method has bodySchema
+          body: undefined,
         });
       }
 
