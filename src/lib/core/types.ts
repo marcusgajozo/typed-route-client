@@ -34,10 +34,8 @@ export type ResponseSchemaOf<
   Path extends keyof R,
   M extends keyof R[Path]['methods'],
 > =
-  MethodDef<R, Path, M> extends { responseSchema: infer S }
-    ? S extends z.ZodType
-      ? S
-      : never
+  MethodDef<R, Path, M> extends { responseSchema: infer S extends z.ZodType }
+    ? S
     : never;
 
 export type BodySchemaOf<
@@ -45,10 +43,8 @@ export type BodySchemaOf<
   Path extends keyof R,
   M extends keyof R[Path]['methods'],
 > =
-  MethodDef<R, Path, M> extends { bodySchema: infer S }
-    ? S extends z.ZodType
-      ? S
-      : undefined
+  MethodDef<R, Path, M> extends { bodySchema: infer S extends z.ZodType }
+    ? S
     : undefined;
 
 export type ResponseOf<
@@ -56,32 +52,27 @@ export type ResponseOf<
   Path extends keyof R,
   M extends keyof R[Path]['methods'],
 > =
-  MethodDef<R, Path, M> extends { responseSchema: infer S }
-    ? S extends z.ZodType
-      ? z.output<S>
-      : unknown
+  MethodDef<R, Path, M> extends { responseSchema: infer S extends z.ZodType }
+    ? z.output<S>
     : unknown;
 
 export type BodyOf<
   R extends RouteRegistryBase,
-  Path extends keyof R,
-  M extends keyof R[Path]['methods'],
-> =
-  MethodDef<R, Path, M> extends { bodySchema: infer S }
-    ? S extends z.ZodType
-      ? z.input<S>
-      : undefined
-    : undefined;
+  Path extends keyof R & string,
+  M extends keyof R[Path]['methods'] & HttpMethod,
+> = R[Path]['methods'][M] extends { bodySchema: infer S }
+  ? unknown extends S
+    ? undefined
+    : z.input<S>
+  : undefined;
 
 export type ErrorOf<
   R extends RouteRegistryBase,
   Path extends keyof R,
   M extends keyof R[Path]['methods'],
 > =
-  MethodDef<R, Path, M> extends { errorSchema: infer S }
-    ? S extends z.ZodType
-      ? z.output<S>
-      : unknown
+  MethodDef<R, Path, M> extends { errorSchema: infer S extends z.ZodType }
+    ? z.output<S>
     : unknown;
 
 export type HasPathParams<Path extends string> =
@@ -157,7 +148,7 @@ export type MutationArgParamsAndBody<
 > = (ParamsRequired extends true
   ? { params: RouteParamsFromPath<Path> }
   : { params?: RouteParamsFromPath<Path> }) &
-  (NonNullable<BodyOf<R, PathKey, M>> extends never
+  (BodyOf<R, PathKey, M> extends undefined
     ? Record<string, never>
     : { body: BodyOf<R, PathKey, M> });
 
@@ -172,7 +163,7 @@ export type MutationArgWithHookParams<
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
 > =
-  NonNullable<BodyOf<R, Path, M>> extends never
+  BodyOf<R, Path, M> extends undefined
     ? MutationArgParamsOptional<Path> | undefined
     : MutationArgParamsAndBody<Path, R, Path, M, false>;
 
@@ -187,10 +178,10 @@ export type MutationArgWithoutHookParams<
   M extends keyof R[Path]['methods'] & HttpMethod,
 > =
   HasPathParams<Path> extends true
-    ? NonNullable<BodyOf<R, Path, M>> extends never
+    ? BodyOf<R, Path, M> extends undefined
       ? MutationArgParamsOnly<Path>
       : MutationArgExplicit<R, Path, M>
-    : NonNullable<BodyOf<R, Path, M>> extends never
+    : BodyOf<R, Path, M> extends undefined
       ? undefined
       : BodyOf<R, Path, M>;
 
