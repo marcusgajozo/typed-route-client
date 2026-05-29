@@ -1,5 +1,7 @@
 *
 
+!.github
+!.github/**/*
 !.husky
 !.husky/**/*
 !src
@@ -19,6 +21,7 @@
 !pnpm-lock.yaml
 !pnpm-workspace.yaml
 !README.md
+!release.config.js
 !tsconfig.json
 !tsconfig.lib.json
 !tsconfig.build.json
