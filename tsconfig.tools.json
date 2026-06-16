@@ -3,5 +3,5 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["tsup.config.ts"]
+  "include": ["tsup.config.ts", "vite.config.ts"]
 }

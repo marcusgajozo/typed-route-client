@@ -6,8 +6,6 @@
 !.husky/**/*
 !src
 !src/**/*
-!dist
-!dist/**/*
 !.gitignore
 !.lintstagedrc
 !.nvmrc
@@ -21,6 +19,7 @@
 !pnpm-lock.yaml
 !pnpm-workspace.yaml
 !README.md
+!CHANGELOG.md
 !release.config.js
 !tsconfig.json
 !tsconfig.lib.json

@@ -12,6 +12,7 @@ export {
   type UseApiMutationHook,
   type UseApiMutationOptions,
   type UseApiMutationOptionsBase,
+  type UseApiMutationResult,
 } from './use-api-mutation';
 export {
   createUseApiQuery,

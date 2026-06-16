@@ -16,12 +16,7 @@ export type RouteConfig = {
 
 export type ApiRegistry = Record<string, RouteConfig>;
 
-export type RouteRegistryBase = Record<
-  string,
-  {
-    methods: Record<string, unknown>;
-  }
->;
+export type RouteRegistryBase = Record<string, RouteConfig>;
 
 export type MethodDef<
   R extends RouteRegistryBase,
@@ -38,14 +33,19 @@ export type ResponseSchemaOf<
     ? S
     : never;
 
+export type BodySchemaFromMethodDef<T> =
+  | (T extends undefined
+      ? never
+      : NonNullable<T> extends { bodySchema: infer S extends z.ZodType }
+        ? S
+        : never)
+  | undefined;
+
 export type BodySchemaOf<
   R extends RouteRegistryBase,
   Path extends keyof R,
   M extends keyof R[Path]['methods'],
-> =
-  MethodDef<R, Path, M> extends { bodySchema: infer S extends z.ZodType }
-    ? S
-    : undefined;
+> = BodySchemaFromMethodDef<R[Path]['methods'][M]>;
 
 export type ResponseOf<
   R extends RouteRegistryBase,
@@ -226,9 +226,21 @@ function isMethodConfigEntry(value: unknown): value is MethodConfig {
   return typeof value === 'object' && value !== null;
 }
 
+export function getMethodConfig<
+  R extends RouteRegistryBase,
+  Path extends keyof R & string,
+  M extends keyof R[Path]['methods'] & HttpMethod,
+>(routes: R, path: Path, method: M): R[Path]['methods'][M] | undefined;
+
 export function getMethodConfig<R extends RouteRegistryBase>(
   routes: R,
   path: keyof R & string,
+  method: HttpMethod,
+): MethodConfig | undefined;
+
+export function getMethodConfig(
+  routes: RouteRegistryBase,
+  path: string,
   method: HttpMethod,
 ): MethodConfig | undefined {
   const routeConfig = routes[path];
@@ -242,6 +254,38 @@ export function getMethodConfig<R extends RouteRegistryBase>(
   }
 
   return entry;
+}
+
+function isMethodConfigObject(
+  value: unknown,
+): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function methodDefHasBodySchema<T>(methodDef: T): methodDef is T & {
+  bodySchema: NonNullable<BodySchemaFromMethodDef<T>>;
+} {
+  return (
+    isMethodConfigObject(methodDef) &&
+    'bodySchema' in methodDef &&
+    methodDef.bodySchema !== undefined
+  );
+}
+
+export function hasMethodBodySchema<T>(methodDef: T): methodDef is T & {
+  bodySchema: NonNullable<BodySchemaFromMethodDef<T>>;
+} {
+  return methodDefHasBodySchema(methodDef);
+}
+
+export function readBodySchema<T extends MethodConfig | undefined>(
+  methodDef: T,
+): BodySchemaFromMethodDef<T> {
+  if (methodDefHasBodySchema(methodDef)) {
+    return methodDef.bodySchema;
+  }
+
+  return undefined;
 }
 
 export function getMethodDef<

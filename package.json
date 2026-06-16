@@ -6,6 +6,9 @@
     "type": "git",
     "url": "https://github.com/marcusgajozo/typed-route-client.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "sideEffects": false,
   "files": [
@@ -28,6 +31,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "release": "semantic-release",
     "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {
@@ -47,6 +51,12 @@
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
     "@eslint/js": "^10.0.1",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.8",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.1",
     "@tanstack/react-query": "^5.100.9",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -65,6 +75,7 @@
     "lint-staged": "^17.0.5",
     "prettier": "3.8.3",
     "react": "^19.2.5",
+    "semantic-release": "^25.0.5",
     "ts-jest": "^29.4.11",
     "tsup": "^8.5.0",
     "typescript": "~6.0.3",

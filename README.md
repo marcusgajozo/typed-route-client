@@ -8,12 +8,6 @@ A lib **não** inclui adapter HTTP (fetch, axios, etc.). Você implementa `HttpT
 
 ## Instalação
 
-### GitHub (recomendado por enquanto)
-
-```bash
-pnpm add github:marcusgajozo/typed-route-client#v0.1.0
-```
-
 ### npm (em breve)
 
 ```bash
@@ -152,11 +146,11 @@ const { useApiQuery, useApiMutation } = createReactQueryHooks(routeClient);
 ```bash
 pnpm install
 pnpm test
-pnpm run build   # gera dist/ (commitado para install via GitHub)
+pnpm run build   # gera dist/ localmente (não versionado no git)
 pnpm lint:fix
 ```
 
-Release: `pnpm build` → commit `dist/` → tag `v0.1.0`.
+Release automático no push para `main` (GitHub Actions): lint, test, build e publicação no npm via semantic-release.
 
 ---
 

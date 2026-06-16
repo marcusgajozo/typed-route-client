@@ -85,7 +85,21 @@ export default defineConfig([
     rules: strictTypeCheckedRules,
   },
   {
-    files: ['tsup.config.ts'],
+    files: ['jest.setup.ts'],
+    extends: [js.configs.recommended, tseslint.configs.recommendedTypeChecked],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+      parserOptions: {
+        project: './tsconfig.jest.json',
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    files: ['tsup.config.ts', 'vite.config.ts'],
     extends: [js.configs.recommended, tseslint.configs.recommendedTypeChecked],
     languageOptions: {
       globals: globals.node,
@@ -93,6 +107,10 @@ export default defineConfig([
         project: './tsconfig.tools.json',
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+    rules: {
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
     },
   },
 ]);

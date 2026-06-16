@@ -43,4 +43,4 @@ export {
   resolveApiError,
 } from './parse-transport-error';
 export type * from './types';
-export { getMethodConfig } from './types';
+export { getMethodConfig, hasMethodBodySchema, readBodySchema } from './types';
