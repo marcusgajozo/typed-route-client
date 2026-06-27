@@ -1,6 +1,6 @@
-import type { HttpTransportRequest } from './http-transport';
 import { createMockTransport, testRoutes } from '../test/core-utils';
 import { createRouteClient, runCallRoute } from './call-route';
+import type { HttpTransportRequest } from './http-transport';
 
 type RequestContext = {
   showToast: boolean;
@@ -9,10 +9,10 @@ type RequestContext = {
 
 describe('call-route context inference', () => {
   it('callRoute accepts typed context when transport is HttpTransport<RequestContext>', () => {
-    const transport = createMockTransport<RequestContext>(async (req) => {
+    const transport = createMockTransport<RequestContext>((req) => {
       const showToast: boolean | undefined = req.context?.showToast;
       void showToast;
-      return { data: { ok: true }, status: 200 };
+      return Promise.resolve({ data: { ok: true }, status: 200 });
     });
 
     const client = createRouteClient({
@@ -116,12 +116,12 @@ describe('call-route context inference', () => {
   it('HttpTransportRequest context is typed in transport implementation', () => {
     function typeCheckTransportImpl() {
       const transport = createMockTransport<RequestContext>(
-        async (req: HttpTransportRequest<RequestContext>) => {
+        (req: HttpTransportRequest<RequestContext>) => {
           if (req.context?.showToast) {
-            return { data: { ok: true }, status: 200 };
+            return Promise.resolve({ data: { ok: true }, status: 200 });
           }
 
-          return { data: { ok: false }, status: 200 };
+          return Promise.resolve({ data: { ok: false }, status: 200 });
         },
       );
 
