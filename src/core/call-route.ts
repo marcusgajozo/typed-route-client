@@ -23,10 +23,12 @@ export type RunCallRouteOptionsForPath<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
+  TContext = undefined,
 > = {
   method: M;
   queryParams?: Record<string, unknown>;
   headers?: Record<string, string>;
+  context?: TContext;
 } & (HasPathParams<Path> extends true
   ? { params: { [K in RouteParamName<Path>]: string | number } }
   : { params?: never }) &
@@ -38,45 +40,54 @@ export type CallRouteParams<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
-> = RunCallRouteOptionsForPath<R, Path, M>;
+  TContext = undefined,
+> = RunCallRouteOptionsForPath<R, Path, M, TContext>;
 
 export type CallRouteGetOptionsWithoutParams<
   R extends RouteRegistryBase,
   Path extends PathsWithGetWithoutParams<R>,
-> = Omit<CallRouteParams<R, Path, 'get'>, 'method' | 'params'> & {
+  TContext = undefined,
+> = Omit<CallRouteParams<R, Path, 'get', TContext>, 'method' | 'params'> & {
   method?: 'get';
 };
 
 export type CallRouteGetOptionsWithParams<
   R extends RouteRegistryBase,
   Path extends PathsWithGetWithParams<R>,
-> = Omit<CallRouteParams<R, Path, 'get'>, 'method' | 'params'> & {
+  TContext = undefined,
+> = Omit<CallRouteParams<R, Path, 'get', TContext>, 'method' | 'params'> & {
   method?: 'get';
 } & QueryRouteParamsProp<Path>;
 
 export type CallRouteGetOptionsForPath<
   R extends RouteRegistryBase,
   Path extends PathsWithGet<R>,
-> = Omit<CallRouteParams<R, Path, 'get'>, 'method' | 'params'> & {
+  TContext = undefined,
+> = Omit<CallRouteParams<R, Path, 'get', TContext>, 'method' | 'params'> & {
   method?: 'get';
 } & (HasPathParams<Path> extends true
     ? QueryRouteParamsProp<Path>
     : { params?: never });
 
-export type RunCallRouteOptionsLoose<M extends HttpMethod = HttpMethod> = {
+export type RunCallRouteOptionsLoose<
+  M extends HttpMethod = HttpMethod,
+  TContext = undefined,
+> = {
   method: M;
   body?: unknown;
   queryParams?: Record<string, unknown>;
   headers?: Record<string, string>;
   params?: RouteParamsInput;
+  context?: TContext;
 };
 
-type CallRouteDispatchOptions = {
+export type CallRouteDispatchOptions<TContext = undefined> = {
   method?: HttpMethod;
   body?: unknown;
   queryParams?: Record<string, unknown>;
   headers?: Record<string, string>;
   params?: RouteParamsInput;
+  context?: TContext;
 };
 
 function isMutationMethod(
@@ -85,20 +96,23 @@ function isMutationMethod(
   return method !== undefined && method !== 'get';
 }
 
-export type RouteClient<R extends RouteRegistryBase> = {
+export type RouteClient<
+  R extends RouteRegistryBase,
+  TContext = undefined,
+> = {
   callRoute<
     Path extends keyof R & string,
     const M extends keyof R[Path]['methods'] & HttpMethod,
   >(
     route: Path,
-    options: CallRouteParams<R, Path, M>,
+    options: CallRouteParams<R, Path, M, TContext>,
   ): Promise<ResponseOf<R, Path, M>>;
 
   callRoute<Path extends PathsWithGet<R>>(
     route: Path,
     ...args: HasPathParams<Path> extends true
-      ? [options: CallRouteGetOptionsForPath<R, Path>]
-      : [options?: CallRouteGetOptionsForPath<R, Path>]
+      ? [options: CallRouteGetOptionsForPath<R, Path, TContext>]
+      : [options?: CallRouteGetOptionsForPath<R, Path, TContext>]
   ): Promise<ResponseOf<R, Path, 'get'>>;
 
   runCallRoute<
@@ -106,44 +120,47 @@ export type RouteClient<R extends RouteRegistryBase> = {
     M extends keyof R[Path]['methods'] & HttpMethod,
   >(
     route: Path,
-    options: RunCallRouteOptionsForPath<R, Path, M>,
+    options: RunCallRouteOptionsForPath<R, Path, M, TContext>,
   ): Promise<ResponseOf<R, Path, M>>;
 
   routes: R;
-  transport: HttpTransport;
+  transport: HttpTransport<TContext>;
 };
 
 export async function executeCallRoute<
   R extends RouteRegistryBase,
   const Path extends keyof R & string,
   const M extends keyof R[Path]['methods'] & HttpMethod,
+  TContext = undefined,
 >(
   routes: R,
-  transport: HttpTransport,
+  transport: HttpTransport<TContext>,
   route: Path,
-  options: RunCallRouteOptionsLoose<M>,
+  options: RunCallRouteOptionsLoose<M, TContext>,
 ): Promise<ResponseOf<R, Path, M>>;
 export async function executeCallRoute<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
+  TContext = undefined,
 >(
   routes: R,
-  transport: HttpTransport,
+  transport: HttpTransport<TContext>,
   route: Path,
-  options: RunCallRouteOptionsLoose<M>,
+  options: RunCallRouteOptionsLoose<M, TContext>,
 ): Promise<ResponseOf<R, Path, M>>;
 export async function executeCallRoute<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
+  TContext = undefined,
 >(
   routes: R,
-  transport: HttpTransport,
+  transport: HttpTransport<TContext>,
   route: Path,
-  options: RunCallRouteOptionsLoose<M>,
+  options: RunCallRouteOptionsLoose<M, TContext>,
 ): Promise<ResponseOf<R, Path, M>> {
-  const { method, body, queryParams, headers, params } = options;
+  const { method, body, queryParams, headers, params, context } = options;
 
   assertRouteParamsReady(route, params);
 
@@ -157,6 +174,7 @@ export async function executeCallRoute<
     body: validatedBody,
     queryParams,
     headers,
+    context,
   });
 
   return parseResponseForMethod(routes, route, method, response.data);
@@ -166,19 +184,23 @@ export async function runCallRoute<
   R extends RouteRegistryBase,
   Path extends keyof R & string,
   M extends keyof R[Path]['methods'] & HttpMethod,
+  TContext = undefined,
 >(
   routes: R,
-  transport: HttpTransport,
+  transport: HttpTransport<TContext>,
   route: Path,
-  options: RunCallRouteOptionsForPath<R, Path, M>,
+  options: RunCallRouteOptionsForPath<R, Path, M, TContext>,
 ): Promise<ResponseOf<R, Path, M>> {
   return executeCallRoute(routes, transport, route, options);
 }
 
-export function createRouteClient<const R extends RouteRegistryBase>(config: {
+export function createRouteClient<
+  const R extends RouteRegistryBase,
+  TContext = undefined,
+>(config: {
   routes: R;
-  transport: HttpTransport;
-}): RouteClient<R> {
+  transport: HttpTransport<TContext>;
+}): RouteClient<R, TContext> {
   const { routes, transport } = config;
 
   const runCallRouteBound = <
@@ -186,7 +208,7 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
     M extends keyof R[Path]['methods'] & HttpMethod,
   >(
     route: Path,
-    options: RunCallRouteOptionsForPath<R, Path, M>,
+    options: RunCallRouteOptionsForPath<R, Path, M, TContext>,
   ): Promise<ResponseOf<R, Path, M>> =>
     executeCallRoute(routes, transport, route, options);
 
@@ -195,19 +217,19 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
     const M extends keyof R[Path]['methods'] & HttpMethod,
   >(
     route: Path,
-    options: CallRouteParams<R, Path, M>,
+    options: CallRouteParams<R, Path, M, TContext>,
   ): Promise<ResponseOf<R, Path, M>>;
 
   async function callRoute<Path extends PathsWithGet<R>>(
     route: Path,
     ...args: HasPathParams<Path> extends true
-      ? [options: CallRouteGetOptionsForPath<R, Path>]
-      : [options?: CallRouteGetOptionsForPath<R, Path>]
+      ? [options: CallRouteGetOptionsForPath<R, Path, TContext>]
+      : [options?: CallRouteGetOptionsForPath<R, Path, TContext>]
   ): Promise<ResponseOf<R, Path, 'get'>>;
 
   async function callRoute(
     route: keyof R & string,
-    options?: CallRouteDispatchOptions,
+    options?: CallRouteDispatchOptions<TContext>,
   ) {
     if (options === undefined) {
       return executeCallRoute(routes, transport, route, { method: 'get' });
@@ -220,6 +242,7 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
         queryParams: options.queryParams,
         headers: options.headers,
         params: options.params,
+        context: options.context,
       });
     }
 
@@ -228,6 +251,7 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
       queryParams: options.queryParams,
       headers: options.headers,
       params: options.params,
+      context: options.context,
     });
   }
 
@@ -236,7 +260,7 @@ export function createRouteClient<const R extends RouteRegistryBase>(config: {
     routes,
     runCallRoute: runCallRouteBound,
     transport,
-  } satisfies RouteClient<R>;
+  } satisfies RouteClient<R, TContext>;
 
   return client;
 }

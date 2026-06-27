@@ -1,4 +1,5 @@
 export {
+  type CallRouteDispatchOptions,
   type CallRouteGetOptionsForPath,
   type CallRouteGetOptionsWithoutParams,
   type CallRouteGetOptionsWithParams,

@@ -28,11 +28,11 @@ export const testRoutes = defineApiRoutes({
   },
 });
 
-export function createMockTransport(
+export function createMockTransport<TContext = undefined>(
   impl: (
-    req: HttpTransportRequest,
+    req: HttpTransportRequest<TContext>,
   ) => Promise<{ data: unknown; status: number }>,
-): HttpTransport {
+): HttpTransport<TContext> {
   return {
     request: impl,
   };

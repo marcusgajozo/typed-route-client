@@ -11,16 +11,22 @@ import {
 } from './use-api-mutation';
 import { createUseApiQuery, type UseApiQueryHook } from './use-api-query';
 
-export type ApiClient<R extends RouteRegistryBase> = {
-  routeClient: RouteClient<R>;
+export type ApiClient<
+  R extends RouteRegistryBase,
+  TContext = undefined,
+> = {
+  routeClient: RouteClient<R, TContext>;
   useApiQuery: UseApiQueryHook<R>;
   useApiMutation: UseApiMutationHook<R>;
 };
 
-export function createApiClient<const R extends RouteRegistryBase>(config: {
+export function createApiClient<
+  const R extends RouteRegistryBase,
+  TContext = undefined,
+>(config: {
   routes: R;
-  transport: HttpTransport;
-}): ApiClient<R> {
+  transport: HttpTransport<TContext>;
+}): ApiClient<R, TContext> {
   const routeClient = createRouteClient(config);
 
   return {

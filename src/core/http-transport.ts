@@ -1,11 +1,12 @@
 import type { HttpMethod } from './types';
 
-export type HttpTransportRequest = {
+export type HttpTransportRequest<TContext = undefined> = {
   method: HttpMethod;
   url: string;
   body?: unknown;
   queryParams?: Record<string, unknown>;
   headers?: Record<string, string>;
+  context?: TContext;
 };
 
 export type HttpTransportResponse = {
@@ -32,6 +33,6 @@ export class HttpTransportError extends Error {
   }
 }
 
-export type HttpTransport = {
-  request(req: HttpTransportRequest): Promise<HttpTransportResponse>;
+export type HttpTransport<TContext = undefined> = {
+  request(req: HttpTransportRequest<TContext>): Promise<HttpTransportResponse>;
 };

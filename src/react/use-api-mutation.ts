@@ -76,9 +76,10 @@ export type UseApiMutationHook<R extends RouteRegistryBase> = <
   options: UseApiMutationOptionsInput<R, Path, M, HookOptions>,
 ) => UseApiMutationResult<R, Path, M, HookOptions>;
 
-export function createUseApiMutation<const R extends RouteRegistryBase>(
-  client: RouteClient<R>,
-): UseApiMutationHook<R> {
+export function createUseApiMutation<
+  const R extends RouteRegistryBase,
+  TContext = undefined,
+>(client: RouteClient<R, TContext>): UseApiMutationHook<R> {
   const { routes, transport } = client;
 
   function useApiMutation<
@@ -114,7 +115,7 @@ export function createUseApiMutation<const R extends RouteRegistryBase>(
           arg,
         );
 
-        return executeCallRoute<R, Path, M>(routes, transport, route, {
+        return executeCallRoute<R, Path, M, TContext>(routes, transport, route, {
           method,
           body,
           queryParams,

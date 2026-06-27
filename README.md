@@ -75,6 +75,80 @@ const client = createRouteClient({ routes, transport });
 const users = await client.callRoute('/users');
 ```
 
+### Contexto customizado no transport
+
+Use o genérico `TContext` em `HttpTransportRequest<TContext>` e `HttpTransport<TContext>` para passar metadados da chamada até a função `request` — por exemplo, controlar toast, loading global ou retry silencioso.
+
+```ts
+import {
+  createRouteClient,
+  defineApiRoutes,
+  type CallRouteDispatchOptions,
+  type HttpTransport,
+  type HttpTransportRequest,
+} from 'typed-route-client/core';
+import { z } from 'zod';
+
+type RequestContext = {
+  showToast: boolean;
+  silent?: boolean;
+};
+
+const routes = defineApiRoutes({
+  '/users': {
+    methods: {
+      get: {
+        responseSchema: z.array(z.object({ id: z.number(), name: z.string() })),
+      },
+    },
+  },
+  '/users/:id': {
+    methods: {
+      put: {
+        bodySchema: z.object({ name: z.string() }),
+        responseSchema: z.object({ id: z.number(), name: z.string() }),
+      },
+    },
+  },
+});
+
+const transport: HttpTransport<RequestContext> = {
+  async request(req: HttpTransportRequest<RequestContext>) {
+    if (req.context?.showToast) {
+      // ex.: toast.info('Enviando requisição…')
+    }
+
+    const res = await fetch(req.url, { method: req.method });
+    return { status: res.status, data: await res.json() };
+  },
+};
+
+const client = createRouteClient({ routes, transport });
+
+// GET com contexto
+await client.callRoute('/users', {
+  context: { showToast: true },
+});
+
+// Mutation com contexto
+await client.callRoute('/users/:id', {
+  method: 'put',
+  params: { id: 1 },
+  body: { name: 'Ana' },
+  context: { showToast: false, silent: true },
+});
+
+// runCallRoute também aceita context
+await client.runCallRoute('/users', {
+  method: 'get',
+  context: { showToast: true },
+});
+```
+
+O tipo de `context` é inferido a partir do transport. Com `HttpTransport<RequestContext>`, `callRoute` e `runCallRoute` exigem o shape correto em `context`. Sem o genérico (`HttpTransport`), `context` não é permitido nas opções.
+
+O tipo `CallRouteDispatchOptions<TContext>` descreve as opções aceitas por `callRoute` (incluindo `context`) e pode ser reutilizado no app quando necessário.
+
 ---
 
 ## React + TanStack Query
@@ -126,7 +200,8 @@ const { useApiQuery, useApiMutation } = createReactQueryHooks(routeClient);
 | `defineApiRoutes`, `mergeApiRoutes`                    | Contrato de rotas com literais de path       |
 | `createRouteClient`                                    | Cliente tipado (`callRoute`, `runCallRoute`) |
 | `runCallRoute`, `executeCallRoute`                     | Chamadas com método explícito                |
-| `HttpTransport`, `HttpTransportError`                  | Contrato de transporte                       |
+| `HttpTransport`, `HttpTransportRequest`, `HttpTransportError` | Contrato de transporte (com genérico `TContext` opcional) |
+| `CallRouteDispatchOptions`                             | Opções de `callRoute`, incluindo `context`   |
 | `parseRoute`, `areRouteParamsReady`, `resolveApiError` | Utilitários                                  |
 
 ### React (`typed-route-client/react`)

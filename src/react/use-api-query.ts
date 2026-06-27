@@ -58,8 +58,9 @@ function buildQueryKey(
 function useApiQueryRun<
   R extends RouteRegistryBase,
   Path extends PathsWithGet<R>,
+  TContext = undefined,
 >(
-  client: RouteClient<R>,
+  client: RouteClient<R, TContext>,
   route: Path,
   options?: UseApiQueryOptions<R, Path>,
 ): UseQueryResult<ResponseOf<R, Path, 'get'>, unknown> {
@@ -83,7 +84,7 @@ function useApiQueryRun<
     enabled: enabled && isParamsReady,
     queryFn: async () => {
       try {
-        return await executeCallRoute<R, Path, 'get'>(
+        return await executeCallRoute<R, Path, 'get', TContext>(
           client.routes,
           client.transport,
           route,
@@ -114,9 +115,10 @@ export type UseApiQueryHook<R extends RouteRegistryBase> = {
   ): UseQueryResult<ResponseOf<R, Path, 'get'>, unknown>;
 };
 
-export function createUseApiQuery<const R extends RouteRegistryBase>(
-  client: RouteClient<R>,
-): UseApiQueryHook<R> {
+export function createUseApiQuery<
+  const R extends RouteRegistryBase,
+  TContext = undefined,
+>(client: RouteClient<R, TContext>): UseApiQueryHook<R> {
   function useApiQuery<Path extends PathsWithGetWithParams<R>>(
     route: Path,
     options: UseApiQueryOptions<R, Path>,

@@ -111,6 +111,7 @@ describe('call-route', () => {
         body: undefined,
         queryParams: undefined,
         headers: undefined,
+        context: undefined,
       });
       expect(result).toEqual({ ok: true });
     });
@@ -214,6 +215,59 @@ describe('call-route', () => {
 
       expect(request).toHaveBeenCalledWith(
         expect.objectContaining({ url: '/users/3', body: { name: 'Ana' } }),
+      );
+    });
+
+    it('forwards context to transport.request on callRoute', async () => {
+      type RequestContext = { showToast: boolean };
+
+      const request = jest.fn().mockResolvedValue({
+        data: { ok: true },
+        status: 200,
+      });
+      const client = createRouteClient({
+        routes: testRoutes,
+        transport: createMockTransport<RequestContext>(request),
+      });
+
+      await client.callRoute('/users', {
+        context: { showToast: true },
+      });
+
+      expect(request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'get',
+          url: '/users',
+          context: { showToast: true },
+        }),
+      );
+    });
+
+    it('forwards context to transport.request on runCallRoute', async () => {
+      type RequestContext = { showToast: boolean; silent?: boolean };
+
+      const request = jest.fn().mockResolvedValue({
+        data: { id: 1, name: 'Ana' },
+        status: 200,
+      });
+      const client = createRouteClient({
+        routes: testRoutes,
+        transport: createMockTransport<RequestContext>(request),
+      });
+
+      await client.runCallRoute('/users/:userId', {
+        method: 'put',
+        params: { userId: 5 },
+        body: { name: 'Ana' },
+        context: { showToast: false, silent: true },
+      });
+
+      expect(request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'put',
+          url: '/users/5',
+          context: { showToast: false, silent: true },
+        }),
       );
     });
   });
