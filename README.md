@@ -4,11 +4,13 @@ Biblioteca TypeScript para APIs REST com **rotas tipadas + Zod**, transporte HTT
 
 A lib **não** inclui adapter HTTP (fetch, axios, etc.). Você implementa `HttpTransport` no app.
 
+> **Sem manutenção ativa.** O pacote está publicado no npm e funciona, mas não recebe novas versões nem correções. Se você chegou até aqui, trate o código como referência de tipagem de rotas e use em produção por sua conta.
+
 ---
 
 ## Instalação
 
-### npm (em breve)
+### npm
 
 ```bash
 pnpm add typed-route-client
